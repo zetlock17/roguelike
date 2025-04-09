@@ -25,7 +25,11 @@ if __name__ == "__main__":
     for floor_idx, floor in enumerate(dungeon):
         for room in floor.rooms[1:]:
             if random.random() < 0.7:
-                x, y = room.center
+                x = random.randint(room.x1 + 1, room.x2 - 1)
+                y = random.randint(room.y1 + 1, room.y2 - 1)
+                
+                if not (0 <= x < floor.width and 0 <= y < floor.height):
+                    continue
 
                 enemy_type = random.random()
                 
@@ -58,8 +62,12 @@ if __name__ == "__main__":
     for floor_idx, floor in enumerate(dungeon):
         for room in floor.rooms:
             if random.random() < 0.5:
-                x, y = random.randint(room.x1 + 1, room.x2 - 1), random.randint(room.y1 + 1, room.y2 - 1)
-
+                x = random.randint(room.x1 + 1, room.x2 - 1)
+                y = random.randint(room.y1 + 1, room.y2 - 1)
+                
+                if not (0 <= x < floor.width and 0 <= y < floor.height):
+                    continue
+                
                 item_type = random.random()
                 
                 if item_type < 0.3:
@@ -119,7 +127,6 @@ if __name__ == "__main__":
         
         action = get_char()
         
-        # Обработка действий игрока
         player_moved = False
         
         if action == 'w':

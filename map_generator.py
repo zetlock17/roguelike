@@ -192,16 +192,18 @@ class MapGenerator:
                         min_dist = dist
                         opening_x = ox
         
-        if floor.is_valid_position(opening_x, opening_y):
-            floor.tiles[opening_x][opening_y].tile_type = Tile.CORRIDOR
-            room.openings.append((opening_x, opening_y))
+        if not floor.is_valid_position(opening_x, opening_y):
+            return
             
-            if random.random() < 0.5:
-                self._create_horizontal_tunnel(floor, opening_x, corridor_x, opening_y)
-                self._create_vertical_tunnel(floor, opening_y, corridor_y, corridor_x)
-            else:
-                self._create_vertical_tunnel(floor, opening_y, corridor_y, opening_x)
-                self._create_horizontal_tunnel(floor, opening_x, corridor_x, corridor_y)
+        floor.tiles[opening_x][opening_y].tile_type = Tile.CORRIDOR
+        room.openings.append((opening_x, opening_y))
+        
+        if random.random() < 0.5:
+            self._create_horizontal_tunnel(floor, opening_x, corridor_x, opening_y)
+            self._create_vertical_tunnel(floor, opening_y, corridor_y, corridor_x)
+        else:
+            self._create_vertical_tunnel(floor, opening_y, corridor_y, opening_x)
+            self._create_horizontal_tunnel(floor, opening_x, corridor_x, corridor_y)
         
     def _ensure_room_accessibility(self, floor: Floor) -> None:
         """Проверяет и обеспечивает, что все комнаты имеют как минимум один выход и все доступны."""
@@ -432,74 +434,79 @@ class MapGenerator:
 
         opening1_x, opening1_y = None, None
         
+        # Improved boundary checks for opening in room 1
         if wall1 == 'top' and room1.y1 > 0:
-            opening1_x = random.randint(room1.x1 + 1, room1.x2 - 1)
+            opening1_x = max(room1.x1 + 1, min(room1.x2 - 1, random.randint(room1.x1 + 1, room1.x2 - 1)))
             opening1_y = room1.y1
         elif wall1 == 'bottom' and room1.y2 < floor.height - 1:
-            opening1_x = random.randint(room1.x1 + 1, room1.x2 - 1)
+            opening1_x = max(room1.x1 + 1, min(room1.x2 - 1, random.randint(room1.x1 + 1, room1.x2 - 1)))
             opening1_y = room1.y2
         elif wall1 == 'left' and room1.x1 > 0:
             opening1_x = room1.x1
-            opening1_y = random.randint(room1.y1 + 1, room1.y2 - 1)
+            opening1_y = max(room1.y1 + 1, min(room1.y2 - 1, random.randint(room1.y1 + 1, room1.y2 - 1)))
         elif wall1 == 'right' and room1.x2 < floor.width - 1:
             opening1_x = room1.x2
-            opening1_y = random.randint(room1.y1 + 1, room1.y2 - 1)
+            opening1_y = max(room1.y1 + 1, min(room1.y2 - 1, random.randint(room1.y1 + 1, room1.y2 - 1)))
         
         if opening1_x is None or opening1_y is None:
             for test_wall in ['top', 'bottom', 'left', 'right']:
                 if test_wall == 'top' and room1.y1 > 0:
-                    opening1_x = random.randint(room1.x1 + 1, room1.x2 - 1)
+                    opening1_x = max(room1.x1 + 1, min(room1.x2 - 1, random.randint(room1.x1 + 1, room1.x2 - 1)))
                     opening1_y = room1.y1
                     break
                 elif test_wall == 'bottom' and room1.y2 < floor.height - 1:
-                    opening1_x = random.randint(room1.x1 + 1, room1.x2 - 1)
+                    opening1_x = max(room1.x1 + 1, min(room1.x2 - 1, random.randint(room1.x1 + 1, room1.x2 - 1)))
                     opening1_y = room1.y2
                     break
                 elif test_wall == 'left' and room1.x1 > 0:
                     opening1_x = room1.x1
-                    opening1_y = random.randint(room1.y1 + 1, room1.y2 - 1)
+                    opening1_y = max(room1.y1 + 1, min(room1.y2 - 1, random.randint(room1.y1 + 1, room1.y2 - 1)))
                     break
                 elif test_wall == 'right' and room1.x2 < floor.width - 1:
                     opening1_x = room1.x2
-                    opening1_y = random.randint(room1.y1 + 1, room1.y2 - 1)
+                    opening1_y = max(room1.y1 + 1, min(room1.y2 - 1, random.randint(room1.y1 + 1, room1.y2 - 1)))
                     break
         
         opening2_x, opening2_y = None, None
         
+        # Improved boundary checks for opening in room 2
         if wall2 == 'top' and room2.y1 > 0:
-            opening2_x = random.randint(room2.x1 + 1, room2.x2 - 1)
+            opening2_x = max(room2.x1 + 1, min(room2.x2 - 1, random.randint(room2.x1 + 1, room2.x2 - 1)))
             opening2_y = room2.y1
         elif wall2 == 'bottom' and room2.y2 < floor.height - 1:
-            opening2_x = random.randint(room2.x1 + 1, room2.x2 - 1)
+            opening2_x = max(room2.x1 + 1, min(room2.x2 - 1, random.randint(room2.x1 + 1, room2.x2 - 1)))
             opening2_y = room2.y2
         elif wall2 == 'left' and room2.x1 > 0:
             opening2_x = room2.x1
-            opening2_y = random.randint(room2.y1 + 1, room2.y2 - 1)
+            opening2_y = max(room2.y1 + 1, min(room2.y2 - 1, random.randint(room2.y1 + 1, room2.y2 - 1)))
         elif wall2 == 'right' and room2.x2 < floor.width - 1:
             opening2_x = room2.x2
-            opening2_y = random.randint(room2.y1 + 1, room2.y2 - 1)
+            opening2_y = max(room2.y1 + 1, min(room2.y2 - 1, random.randint(room2.y1 + 1, room2.y2 - 1)))
         
         if opening2_x is None or opening2_y is None:
             for test_wall in ['top', 'bottom', 'left', 'right']:
                 if test_wall == 'top' and room2.y1 > 0:
-                    opening2_x = random.randint(room2.x1 + 1, room2.x2 - 1)
+                    opening2_x = max(room2.x1 + 1, min(room2.x2 - 1, random.randint(room2.x1 + 1, room2.x2 - 1)))
                     opening2_y = room2.y1
                     break
                 elif test_wall == 'bottom' and room2.y2 < floor.height - 1:
-                    opening2_x = random.randint(room2.x1 + 1, room2.x2 - 1)
+                    opening2_x = max(room2.x1 + 1, min(room2.x2 - 1, random.randint(room2.x1 + 1, room2.x2 - 1)))
                     opening2_y = room2.y2
                     break
                 elif test_wall == 'left' and room2.x1 > 0:
                     opening2_x = room2.x1
-                    opening2_y = random.randint(room2.y1 + 1, room2.y2 - 1)
+                    opening2_y = max(room2.y1 + 1, min(room2.y2 - 1, random.randint(room2.y1 + 1, room2.y2 - 1)))
                     break
                 elif test_wall == 'right' and room2.x2 < floor.width - 1:
                     opening2_x = room2.x2
-                    opening2_y = random.randint(room2.y1 + 1, room2.y2 - 1)
+                    opening2_y = max(room2.y1 + 1, min(room2.y2 - 1, random.randint(room2.y1 + 1, room2.y2 - 1)))
                     break
         
+        # Verify openings are valid before proceeding
         if (opening1_x is None or opening1_y is None or
-            opening2_x is None or opening2_y is None):
+            opening2_x is None or opening2_y is None or
+            not floor.is_valid_position(opening1_x, opening1_y) or
+            not floor.is_valid_position(opening2_x, opening2_y)):
             return
         
         floor.tiles[opening1_x][opening1_y].tile_type = Tile.CORRIDOR
@@ -517,37 +524,78 @@ class MapGenerator:
     
     def _create_horizontal_tunnel(self, floor: Floor, x1: int, x2: int, y: int) -> None:
         """Создает горизонтальный коридор."""
+        # Ensure y coordinate is within boundaries
+        if not (0 <= y < floor.height):
+            return
+            
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            if floor.is_valid_position(x, y):
-                floor.tiles[x][y].tile_type = Tile.CORRIDOR
+            if not floor.is_valid_position(x, y):
+                continue
                 
-                if floor.is_valid_position(x, y-1) and floor.tiles[x][y-1].tile_type == Tile.EMPTY:
-                    floor.tiles[x][y-1].tile_type = Tile.WALL
-                if floor.is_valid_position(x, y+1) and floor.tiles[x][y+1].tile_type == Tile.EMPTY:
-                    floor.tiles[x][y+1].tile_type = Tile.WALL
+            floor.tiles[x][y].tile_type = Tile.CORRIDOR
+            
+            # Add walls only if the adjacent positions are valid and empty
+            if floor.is_valid_position(x, y-1) and floor.tiles[x][y-1].tile_type == Tile.EMPTY:
+                floor.tiles[x][y-1].tile_type = Tile.WALL
+            if floor.is_valid_position(x, y+1) and floor.tiles[x][y+1].tile_type == Tile.EMPTY:
+                floor.tiles[x][y+1].tile_type = Tile.WALL
     
     def _create_vertical_tunnel(self, floor: Floor, y1: int, y2: int, x: int) -> None:
         """Создает вертикальный коридор."""
+        # Ensure x coordinate is within boundaries
+        if not (0 <= x < floor.width):
+            return
+            
         for y in range(min(y1, y2), max(y1, y2) + 1):
-            if floor.is_valid_position(x, y):
-                floor.tiles[x][y].tile_type = Tile.CORRIDOR
-                if floor.is_valid_position(x-1, y) and floor.tiles[x-1][y].tile_type == Tile.EMPTY:
-                    floor.tiles[x-1][y].tile_type = Tile.WALL
-                if floor.is_valid_position(x+1, y) and floor.tiles[x+1][y].tile_type == Tile.EMPTY:
-                    floor.tiles[x+1][y].tile_type = Tile.WALL
+            if not floor.is_valid_position(x, y):
+                continue
+                
+            floor.tiles[x][y].tile_type = Tile.CORRIDOR
+            
+            # Add walls only if the adjacent positions are valid and empty
+            if floor.is_valid_position(x-1, y) and floor.tiles[x-1][y].tile_type == Tile.EMPTY:
+                floor.tiles[x-1][y].tile_type = Tile.WALL
+            if floor.is_valid_position(x+1, y) and floor.tiles[x+1][y].tile_type == Tile.EMPTY:
+                floor.tiles[x+1][y].tile_type = Tile.WALL
     
     def _add_stairs(self, floor_num: int, next_floor_num: int) -> None:
         """Добавляет лестницы, соединяющие два соседних этажа."""
         current_floor = self.floors[floor_num]
         next_floor = self.floors[next_floor_num]
         
-        room_up = random.choice(current_floor.rooms)
+        # Choose a room not at the edge of the map for stairs up
+        suitable_rooms_up = [room for room in current_floor.rooms 
+                          if room.x1 > 1 and room.x2 < current_floor.width - 2 
+                          and room.y1 > 1 and room.y2 < current_floor.height - 2]
+        
+        if not suitable_rooms_up:
+            suitable_rooms_up = current_floor.rooms
+            
+        room_up = random.choice(suitable_rooms_up)
         x_up, y_up = room_up.center
+        
+        # Ensure coordinates are valid
+        x_up = max(1, min(current_floor.width - 2, x_up))
+        y_up = max(1, min(current_floor.height - 2, y_up))
+        
         current_floor.tiles[x_up][y_up].tile_type = Tile.STAIRS_UP
         current_floor.stairs_up.append((x_up, y_up))
         
-        room_down = random.choice(next_floor.rooms)
+        # Same for stairs down
+        suitable_rooms_down = [room for room in next_floor.rooms 
+                            if room.x1 > 1 and room.x2 < next_floor.width - 2 
+                            and room.y1 > 1 and room.y2 < next_floor.height - 2]
+        
+        if not suitable_rooms_down:
+            suitable_rooms_down = next_floor.rooms
+            
+        room_down = random.choice(suitable_rooms_down)
         x_down, y_down = room_down.center
+        
+        # Ensure coordinates are valid
+        x_down = max(1, min(next_floor.width - 2, x_down))
+        y_down = max(1, min(next_floor.height - 2, y_down))
+        
         next_floor.tiles[x_down][y_down].tile_type = Tile.STAIRS_DOWN
         next_floor.stairs_down.append((x_down, y_down))
     
