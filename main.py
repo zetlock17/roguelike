@@ -9,7 +9,6 @@ from entities import (
 )
 
 from map_generator import MapGenerator
-
 def get_char():
     return msvcrt.getch().decode('utf-8').lower()
     
@@ -19,6 +18,8 @@ if __name__ == "__main__":
 
     start_x, start_y = dungeon[0].rooms[0].center
     player = Player(start_x, start_y, "Заключенный #42")
+
+    dungeon[0].reveal_area(start_x, start_y, 5)
 
     enemies = []
     
@@ -86,30 +87,12 @@ if __name__ == "__main__":
         current_floor = player.current_floor
         floor = dungeon[current_floor]
         
-        for y in range(floor.height):
-            row = ""
-            for x in range(floor.width):
-                if player.x == x and player.y == y and player.current_floor == current_floor:
-                    row += player.char
-                else:
-                    enemy_here = False
-                    for enemy in enemies:
-                        if enemy.x == x and enemy.y == y and enemy.current_floor == current_floor:
-                            row += enemy.char
-                            enemy_here = True
-                            break
-
-                    if not enemy_here:
-                        item_here = False
-                        for item, item_x, item_y, item_floor in items:
-                            if item_x == x and item_y == y and item_floor == current_floor:
-                                row += item.char
-                                item_here = True
-                                break
-                        
-                        if not item_here:
-                            row += str(floor.tiles[x][y])
-            print(row)
+        map_generator.print_map(
+    player.current_floor,
+    player=player,
+    entities=enemies,
+    items=items
+)
         
         if message:
             print(message)
