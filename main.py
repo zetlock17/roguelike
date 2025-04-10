@@ -5,7 +5,7 @@ import msvcrt
 from entities import (
     Player, Dog, Guard, Shooter, Downcast, Authority,
     Fists, Baton, Shiv, Gun, Cockroach, StaleBread, PrisonFood, CondensedMilk,
-    Item
+    Item, Weapon
 )
 
 from map_generator import MapGenerator
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     dungeon = map_generator.generate_map()
 
     start_x, start_y = dungeon[0].rooms[0].center
-    player = Player(start_x, start_y, "Заключенный #42")
+    player = Player(start_x, start_y, "Заключенный Жужун")
 
     enemies = []
     
@@ -35,27 +35,47 @@ if __name__ == "__main__":
                 
                 if floor_idx == 0:
                     if enemy_type < 0.4:
-                        enemies.append(Dog(x, y))
+                        enemy = Dog(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     elif enemy_type < 0.7:
-                        enemies.append(Downcast(x, y))
+                        enemy = Downcast(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     else:
-                        enemies.append(Guard(x, y))
+                        enemy = Guard(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                 elif floor_idx == 1:
                     if enemy_type < 0.3:
-                        enemies.append(Guard(x, y))
+                        enemy = Guard(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     elif enemy_type < 0.6:
-                        enemies.append(Downcast(x, y))
+                        enemy = Downcast(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     elif enemy_type < 0.8:
-                        enemies.append(Authority(x, y))
+                        enemy = Authority(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     else:
-                        enemies.append(Shooter(x, y))
+                        enemy = Shooter(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                 else:
                     if enemy_type < 0.3:
-                        enemies.append(Authority(x, y))
+                        enemy = Authority(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     elif enemy_type < 0.6:
-                        enemies.append(Shooter(x, y))
+                        enemy = Shooter(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
                     else:
-                        enemies.append(Guard(x, y))
+                        enemy = Guard(x, y)
+                        enemy.current_floor = floor_idx
+                        enemies.append(enemy)
 
     items = []
 
@@ -205,11 +225,9 @@ if __name__ == "__main__":
                         if 0 <= index < len(all_items):
                             item = all_items[index]
                             if item.use(player):
-                                if isinstance(item, Weapon) and item != player.equipped_weapon:
-                                    player.inventory.general_items.remove(item)
+                                player.inventory.remove_item(item)
+                                if isinstance(item, Weapon) and item == player.equipped_weapon:
                                     message = f"Вы экипировали {item.name}."
-                                elif item in player.inventory.general_items:
-                                    player.inventory.general_items.remove(item)
                             break
                     except ValueError:
                         continue

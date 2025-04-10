@@ -101,6 +101,7 @@ class Player(Character):
     def eat_food(self, food: 'Food') -> int:
         """Съедает пищу и получает восстановление здоровья."""
         health_recovered = self.heal(food.nutrition)
+        self.inventory.remove_item(food)
         return health_recovered
 
 
@@ -550,3 +551,21 @@ class Inventory:
                 
         items.extend(self.general_items)
         return items
+        
+    def remove_item(self, item: Item) -> bool:
+        """Удаляет предмет из инвентаря независимо от типа слота."""
+        if isinstance(item, Food):
+            for slot in self.food_slots:
+                if not slot.is_empty() and slot.item == item:
+                    slot.take()
+                    return True
+        
+        if not self.weapon_slot.is_empty() and self.weapon_slot.item == item and item.name != "Кулаки":
+            self.weapon_slot.take()
+            return True
+        
+        if item in self.general_items:
+            self.general_items.remove(item)
+            return True
+        
+        return False
