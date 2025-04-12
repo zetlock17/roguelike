@@ -66,6 +66,16 @@ class Floor:
         self.rooms: List[Room] = []
         self.stairs_up: List[Tuple[int, int]] = []
         self.stairs_down: List[Tuple[int, int]] = []
+
+    def update_fov(self, x: int, y: int, radius: int = 5) -> None:
+        """Обновляет исследованные тайлы вокруг позиции (x, y)."""
+        for dx in range(-radius, radius + 1):
+            for dy in range(-radius, radius + 1):
+                if dx**2 + dy**2 <= radius**2:
+                    tx = x + dx
+                    ty = y + dy
+                    if 0 <= tx < self.width and 0 <= ty < self.height:
+                        self.tiles[tx][ty].explored = True
         
     def is_blocked(self, x: int, y: int) -> bool:
         """Проверяет, заблокирована ли клетка для прохождения."""
@@ -96,6 +106,11 @@ class MapGenerator:
 
         for floor_num in range(self.num_floors):
             floor = self._generate_floor()
+            if floor.rooms:  
+                start_room = floor.rooms[0]
+                start_x, start_y = start_room.center
+                floor.update_fov(start_x, start_y)
+
             self.floors.append(floor)
 
         for floor_num in range(self.num_floors - 1):
@@ -609,8 +624,12 @@ class MapGenerator:
         for y in range(floor.height):
             row = ""
             for x in range(floor.width):
+                tile = floor.tiles[x][y]
                 if player and player.current_floor == floor_num and player.x == x and player.y == y:
                     row += "@"
                 else:
-                    row += str(floor.tiles[x][y])
+                    if tile.explored:
+                        row += str(tile)
+                    else:
+                        row += " "
             print(row)
