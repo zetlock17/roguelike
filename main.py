@@ -9,6 +9,7 @@ from entities import (
 )
 
 from map_generator import MapGenerator
+
 def get_char():
     return msvcrt.getch().decode('utf-8').lower()
     
@@ -19,7 +20,8 @@ if __name__ == "__main__":
     start_x, start_y = dungeon[0].rooms[0].center
     player = Player(start_x, start_y, "Заключенный #42")
 
-    dungeon[0].reveal_area(start_x, start_y, 5)
+    if dungeon and dungeon[0].rooms:  # Проверка на существование данных
+        dungeon[0].update_fov(start_x, start_y)
 
     enemies = []
     
@@ -87,13 +89,37 @@ if __name__ == "__main__":
         current_floor = player.current_floor
         floor = dungeon[current_floor]
         
-        map_generator.print_map(
-    player.current_floor,
-    player=player,
-    entities=enemies,
-    items=items
-)
-        
+        for y in range(floor.height):
+            row = ""
+            for x in range(floor.width):
+                tile = floor.tiles[x][y]
+                if player.x == x and player.y == y and player.current_floor == current_floor:
+                    row += player.char
+                else:
+                    enemy_here = False
+                    # Проверка на врагов
+                    for enemy in enemies:
+                        if enemy.x == x and enemy.y == y and enemy.current_floor == current_floor:
+                            row += enemy.char if tile.explored else " "
+                            enemy_here = True
+                            break
+                    if enemy_here:
+                        continue
+
+                    # Проверка на предметы
+                    item_here = False
+                    for item, item_x, item_y, item_floor in items:
+                        if item_x == x and item_y == y and item_floor == current_floor:
+                            row += item.char if tile.explored else " "
+                            item_here = True
+                            break
+                    if item_here:
+                        continue
+
+                    # Отрисовка тайла, если он исследован
+                    row += str(tile) if tile.explored else " "
+            print(row)
+                
         if message:
             print(message)
             message = ""
@@ -194,8 +220,7 @@ if __name__ == "__main__":
         
         if player_moved:
             current_floor = dungeon[player.current_floor]
-            current_floor.reveal_area(player.x, player.y, 5)
-            
+            current_floor.update_fov(player.x, player.y)
             for enemy in enemies:
                 if enemy.current_floor == player.current_floor:
                     if enemy.distance_to(player) <= 1.5:
