@@ -193,6 +193,9 @@ if __name__ == "__main__":
             running = False
         
         if player_moved:
+            current_floor = dungeon[player.current_floor]
+            current_floor.reveal_area(player.x, player.y, 5)
+            
             for enemy in enemies:
                 if enemy.current_floor == player.current_floor:
                     if enemy.distance_to(player) <= 1.5:

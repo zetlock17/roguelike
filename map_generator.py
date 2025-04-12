@@ -18,8 +18,6 @@ class Tile:
         
     def __str__(self) -> str:
         """Возвращает символьное отображение тайла."""
-        if not self.explored:  
-            return "░"
         if self.tile_type == Tile.EMPTY:
             return " "
         elif self.tile_type == Tile.FLOOR:
@@ -33,7 +31,7 @@ class Tile:
         elif self.tile_type == Tile.STAIRS_DOWN:
             return ">"
         return " "
-        
+
 class Room:
     """Представляет комнату в подземелье."""
     
@@ -68,6 +66,16 @@ class Floor:
         self.rooms: List[Room] = []
         self.stairs_up: List[Tuple[int, int]] = []
         self.stairs_down: List[Tuple[int, int]] = []
+
+    def update_fov(self, x: int, y: int, radius: int = 5) -> None:
+        """Обновляет исследованные тайлы вокруг позиции (x, y)."""
+        for dx in range(-radius, radius + 1):
+            for dy in range(-radius, radius + 1):
+                if dx**2 + dy**2 <= radius**2:
+                    tx = x + dx
+                    ty = y + dy
+                    if 0 <= tx < self.width and 0 <= ty < self.height:
+                        self.tiles[tx][ty].explored = True
         
     def is_blocked(self, x: int, y: int) -> bool:
         """Проверяет, заблокирована ли клетка для прохождения."""
@@ -78,15 +86,6 @@ class Floor:
     def is_valid_position(self, x: int, y: int) -> bool:
         """Проверяет, является ли позиция допустимой."""
         return 0 <= x < self.width and 0 <= y < self.height
-    
-    def reveal_area(self, center_x: int, center_y: int, radius: int) -> None:
-        """Открывает область вокруг указанной точки"""
-        for dx in range(-radius, radius + 1):
-            for dy in range(-radius, radius + 1):
-                x = center_x + dx
-                y = center_y + dy
-                if self.is_valid_position(x, y):
-                    self.tiles[x][y].explored = True
 
 class MapGenerator:
     """Генерирует карту подземелья с несколькими этажами."""
@@ -107,6 +106,11 @@ class MapGenerator:
 
         for floor_num in range(self.num_floors):
             floor = self._generate_floor()
+            if floor.rooms:  
+                start_room = floor.rooms[0]
+                start_x, start_y = start_room.center
+                floor.update_fov(start_x, start_y)
+
             self.floors.append(floor)
 
         for floor_num in range(self.num_floors - 1):
@@ -562,56 +566,22 @@ class MapGenerator:
         next_floor.tiles[x_down][y_down].tile_type = Tile.STAIRS_DOWN
         next_floor.stairs_down.append((x_down, y_down))
     
-    def print_map(self, floor_num: int, player=None, 
-                entities: list = None, items: list = None) -> None:
-        """Улучшенный метод отображения с учетом видимости и сущностей"""
+    def print_map(self, floor_num: int, player=None) -> None:
+        """Отображает карту этажа с позицией игрока (если указан)."""
         if floor_num < 0 or floor_num >= len(self.floors):
             print(f"Этаж {floor_num} не существует!")
             return
-        
+            
         floor = self.floors[floor_num]
-        entities = entities or []
-        items = items or []
-        
         for y in range(floor.height):
             row = ""
             for x in range(floor.width):
                 tile = floor.tiles[x][y]
-                
-                # Обработка тумана войны
-                if not tile.explored:
-                    row += "░"
-                    continue
-                
-                # Отображение игрока
-                if player and (x, y) == (player.x, player.y) and player.current_floor == floor_num:
-                    row += player.char
-                    continue
-                
-                # Отображение сущностей
-                entity_char = None
-                for entity in entities:
-                    if (entity.x == x and entity.y == y and 
-                        entity.current_floor == floor_num and 
-                        not entity.is_dead()):
-                        entity_char = entity.char
-                        break
-                if entity_char:
-                    row += entity_char
-                    continue
-                
-                # Отображение предметов
-                item_char = None
-                for item, item_x, item_y, item_floor in items:
-                    if (item_x == x and item_y == y and 
-                        item_floor == floor_num and 
-                        not item.is_used()):
-                        item_char = item.char
-                        break
-                if item_char:
-                    row += item_char
-                    continue
-                
-                # Отображение тайла
-                row += str(tile)
+                if player and player.current_floor == floor_num and player.x == x and player.y == y:
+                    row += "@"
+                else:
+                    if tile.explored:
+                        row += str(tile)
+                    else:
+                        row += " "
             print(row)
