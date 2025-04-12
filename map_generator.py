@@ -449,7 +449,6 @@ class MapGenerator:
 
         opening1_x, opening1_y = None, None
         
-        # Improved boundary checks for opening in room 1
         if wall1 == 'top' and room1.y1 > 0:
             opening1_x = max(room1.x1 + 1, min(room1.x2 - 1, random.randint(room1.x1 + 1, room1.x2 - 1)))
             opening1_y = room1.y1
@@ -483,8 +482,7 @@ class MapGenerator:
                     break
         
         opening2_x, opening2_y = None, None
-        
-        # Improved boundary checks for opening in room 2
+
         if wall2 == 'top' and room2.y1 > 0:
             opening2_x = max(room2.x1 + 1, min(room2.x2 - 1, random.randint(room2.x1 + 1, room2.x2 - 1)))
             opening2_y = room2.y1
@@ -517,7 +515,6 @@ class MapGenerator:
                     opening2_y = max(room2.y1 + 1, min(room2.y2 - 1, random.randint(room2.y1 + 1, room2.y2 - 1)))
                     break
         
-        # Verify openings are valid before proceeding
         if (opening1_x is None or opening1_y is None or
             opening2_x is None or opening2_y is None or
             not floor.is_valid_position(opening1_x, opening1_y) or
@@ -539,7 +536,6 @@ class MapGenerator:
     
     def _create_horizontal_tunnel(self, floor: Floor, x1: int, x2: int, y: int) -> None:
         """Создает горизонтальный коридор."""
-        # Ensure y coordinate is within boundaries
         if not (0 <= y < floor.height):
             return
             
@@ -549,7 +545,6 @@ class MapGenerator:
                 
             floor.tiles[x][y].tile_type = Tile.CORRIDOR
             
-            # Add walls only if the adjacent positions are valid and empty
             if floor.is_valid_position(x, y-1) and floor.tiles[x][y-1].tile_type == Tile.EMPTY:
                 floor.tiles[x][y-1].tile_type = Tile.WALL
             if floor.is_valid_position(x, y+1) and floor.tiles[x][y+1].tile_type == Tile.EMPTY:
@@ -557,7 +552,6 @@ class MapGenerator:
     
     def _create_vertical_tunnel(self, floor: Floor, y1: int, y2: int, x: int) -> None:
         """Создает вертикальный коридор."""
-        # Ensure x coordinate is within boundaries
         if not (0 <= x < floor.width):
             return
             
@@ -567,7 +561,6 @@ class MapGenerator:
                 
             floor.tiles[x][y].tile_type = Tile.CORRIDOR
             
-            # Add walls only if the adjacent positions are valid and empty
             if floor.is_valid_position(x-1, y) and floor.tiles[x-1][y].tile_type == Tile.EMPTY:
                 floor.tiles[x-1][y].tile_type = Tile.WALL
             if floor.is_valid_position(x+1, y) and floor.tiles[x+1][y].tile_type == Tile.EMPTY:
@@ -578,7 +571,6 @@ class MapGenerator:
         current_floor = self.floors[floor_num]
         next_floor = self.floors[next_floor_num]
         
-        # Choose a room not at the edge of the map for stairs up
         suitable_rooms_up = [room for room in current_floor.rooms 
                           if room.x1 > 1 and room.x2 < current_floor.width - 2 
                           and room.y1 > 1 and room.y2 < current_floor.height - 2]
@@ -589,14 +581,12 @@ class MapGenerator:
         room_up = random.choice(suitable_rooms_up)
         x_up, y_up = room_up.center
         
-        # Ensure coordinates are valid
         x_up = max(1, min(current_floor.width - 2, x_up))
         y_up = max(1, min(current_floor.height - 2, y_up))
         
         current_floor.tiles[x_up][y_up].tile_type = Tile.STAIRS_UP
         current_floor.stairs_up.append((x_up, y_up))
-        
-        # Same for stairs down
+
         suitable_rooms_down = [room for room in next_floor.rooms 
                             if room.x1 > 1 and room.x2 < next_floor.width - 2 
                             and room.y1 > 1 and room.y2 < next_floor.height - 2]
@@ -607,7 +597,6 @@ class MapGenerator:
         room_down = random.choice(suitable_rooms_down)
         x_down, y_down = room_down.center
         
-        # Ensure coordinates are valid
         x_down = max(1, min(next_floor.width - 2, x_down))
         y_down = max(1, min(next_floor.height - 2, y_down))
         

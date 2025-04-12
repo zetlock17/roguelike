@@ -106,6 +106,8 @@ if __name__ == "__main__":
     running = True
     message = ""
     
+    dungeon[player.current_floor].update_fov(player.x, player.y)
+
     while running:
         os.system('cls' if os.name == 'nt' else 'clear')
         
@@ -117,6 +119,11 @@ if __name__ == "__main__":
         for y in range(floor.height):
             row = ""
             for x in range(floor.width):
+                tile = floor.tiles[x][y]
+                if not tile.explored:
+                    row += " "
+                    continue
+
                 if player.x == x and player.y == y and player.current_floor == current_floor:
                     row += player.char
                 else:
@@ -136,7 +143,7 @@ if __name__ == "__main__":
                                 break
                         
                         if not item_here:
-                            row += str(floor.tiles[x][y])
+                            row += str(tile)
             print(row)
         
         if message:
@@ -235,22 +242,25 @@ if __name__ == "__main__":
             running = False
         
         if player_moved:
+            dungeon[player.current_floor].update_fov(player.x, player.y)
+
             for enemy in enemies:
                 if enemy.current_floor == player.current_floor:
-                    if enemy.distance_to(player) <= 1.5:
-                        if isinstance(enemy, Guard):
-                            damage = enemy.power + enemy.weapon.damage
-                        elif isinstance(enemy, Shooter) and enemy.distance_to(player) <= 1.5:
-                            damage = enemy.power + enemy.weapon.damage
-                        elif isinstance(enemy, Authority) and enemy.aggravated:
-                            damage = enemy.power + enemy.weapon.damage
+                    if dungeon[player.current_floor].tiles[enemy.x][enemy.y].explored:
+                        if enemy.distance_to(player) <= 1.5:
+                            if isinstance(enemy, Guard):
+                                damage = enemy.power + enemy.weapon.damage
+                            elif isinstance(enemy, Shooter) and enemy.distance_to(player) <= 1.5:
+                                damage = enemy.power + enemy.weapon.damage
+                            elif isinstance(enemy, Authority) and enemy.aggravated:
+                                damage = enemy.power + enemy.weapon.damage
+                            else:
+                                damage = enemy.power
+                            
+                            player.take_damage(damage)
+                            message += f"\n{enemy.name} атакует вас, нанося {damage} урона!"
                         else:
-                            damage = enemy.power
-                        
-                        player.take_damage(damage)
-                        message += f"\n{enemy.name} атакует вас, нанося {damage} урона!"
-                    else:
-                        enemy.take_turn(player, dungeon)
+                            enemy.take_turn(player, dungeon)
 
             if player.is_dead():
                 os.system('cls' if os.name == 'nt' else 'clear')
