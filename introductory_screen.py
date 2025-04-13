@@ -1,7 +1,7 @@
 import os
 import time
 import random
-from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style, init
 
 
 from input_handler import get_char
@@ -86,26 +86,32 @@ def transition_to_game():
     def clear_screen():
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    for _ in range(3):
+    for step in range(20):
         clear_screen()
-        time.sleep(0.15)
         for line in title_screen_lines:
-            print(line)
-        time.sleep(0.15)
-
-    remaining_lines = title_screen_lines.copy()
-    line_indices = list(range(len(remaining_lines)))
-
-    while line_indices:
-        index = random.choice(line_indices)
-        line_indices.remove(index)
-        
-        clear_screen()
-        for i in range(len(title_screen_lines)):
-            if i in line_indices:
-                print(title_screen_lines[i])
+            faded_line = ""
+            for char in line:
+                # Случайное удаление символов с увеличивающейся вероятностью
+                if random.random() < step * 0.05:
+                    faded_line += " "
+                else:
+                    faded_line += char
+            # Добавляем легкое "размытие" цветом
+            if step > 10:
+                print(Fore.LIGHTBLACK_EX + Style.DIM + faded_line + Style.RESET_ALL)
             else:
-                print(" " * len(title_screen_lines[i]))  
-        time.sleep(0.01)  
+                print(faded_line)
+        time.sleep(0.03)
+
+    # Финальная стадия: плавное затемнение
+    for alpha in range(10, -1, -1):
+        clear_screen()
+        for line in title_screen_lines:
+            # Полное исчезновение с эффектом прозрачности
+            if random.random() < alpha / 10:
+                print(Fore.LIGHTBLACK_EX + Style.DIM + line + Style.RESET_ALL)
+            else:
+                print(" " * len(line))
+        time.sleep(0.05)
 
     clear_screen()
