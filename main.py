@@ -2,6 +2,7 @@ import random
 import os
 import msvcrt
 import time
+from colorama import Fore, Back, Style
 
 from entities import (
     Player, Dog, Guard, Shooter, Downcast, Authority,
@@ -112,6 +113,8 @@ if __name__ == "__main__":
     
     dungeon[player.current_floor].update_fov(player.x, player.y)
 
+
+    
     while running:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("   ┌───────────────────────────────────────┐  ┌───────────────────────────────────────┐")

@@ -1,5 +1,6 @@
 import random
 from typing import List, Tuple, Dict, Optional, Set
+from colorama import Fore, Back, Style
 
 
 class Tile:
@@ -21,15 +22,15 @@ class Tile:
         if self.tile_type == Tile.EMPTY:
             return " "
         elif self.tile_type == Tile.FLOOR:
-            return "."
+            return Back.BLACK+" "+Back.RESET
         elif self.tile_type == Tile.WALL:
-            return "#"
+            return Fore.LIGHTBLACK_EX + Back.BLACK+ "▓" + Fore.RESET + Back.RESET
         elif self.tile_type == Tile.CORRIDOR:
-            return "."
+            return Back.BLACK+" "+Back.RESET
         elif self.tile_type == Tile.STAIRS_UP:
-            return "<"
+            return Back.BLACK + "🪜" + Back.RESET
         elif self.tile_type == Tile.STAIRS_DOWN:
-            return ">"
+            return Back.BLACK + "🪜" + Back.RESET
         return " "
 
 class Room:
