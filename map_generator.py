@@ -28,9 +28,9 @@ class Tile:
         elif self.tile_type == Tile.CORRIDOR:
             return Back.BLACK+" "+Back.RESET
         elif self.tile_type == Tile.STAIRS_UP:
-            return Back.BLACK + "🪜" + Back.RESET
+            return Back.BLACK + "\033[38;5;130m▤\033[0m" + Back.RESET
         elif self.tile_type == Tile.STAIRS_DOWN:
-            return Back.BLACK + "🪜" + Back.RESET
+            return Back.BLACK + "\033[38;5;130m▤\033[0m" + Back.RESET
         return " "
 
 class Room:

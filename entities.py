@@ -58,7 +58,7 @@ class Player(Character):
     """Класс игрового персонажа."""
     
     def __init__(self, x: int, y: int, name: str = "Заключенный"):
-        super().__init__(x, y,Back.BLACK + '@' + Back.RESET, name, hp=100, defense=1, power=5)
+        super().__init__(x, y, Fore.GREEN + Back.BLACK + '☺' + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
         self.equipped_weapon = Fists()
 
@@ -213,7 +213,7 @@ class Dog(HostileEnemy):
     """Класс враждебной собаки."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 'D', "Злая собака", hp=20, defense=0, power=3, view_range=8)
+        super().__init__(x, y,Back.BLACK+ "\033[38;5;130mƊ\033[0m", "Злая собака", hp=20, defense=0, power=3, view_range=8)
 
 
 class Police(HostileEnemy):
@@ -227,7 +227,7 @@ class Guard(Police):
     """Класс охранника - полицейский с дубинкой."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 'G', "Охранник", hp=30, defense=2, power=5)
+        super().__init__(x, y, Fore.RED + Back.BLACK + '⚔' + Fore.RESET + Back.RESET, "Охранник", hp=30, defense=2, power=5)
         self.weapon = Baton()
     
     def take_turn(self, player, game_map) -> None:
@@ -268,7 +268,7 @@ class Shooter(Police):
     """Класс стрелка - полицейский с пистолетом."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 'S', "Стрелок", hp=25, defense=1, power=3)
+        super().__init__(x, y, Fore.RED + Back.BLACK + '➹' + Fore.RESET + Back.RESET, "Стрелок", hp=25, defense=1, power=3)
         self.weapon = Gun()
         self.shoot_range = 5
     
@@ -314,7 +314,7 @@ class Downcast(NeutralEnemy):
     """Класс опущенного заключенного."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 'p', "Опущенный", hp=15, defense=0, power=2)
+        super().__init__(x, y, Fore.YELLOW + Back.BLACK+'☹' + Fore.RESET + Back.BLACK, "Опущенный", hp=15, defense=0, power=2)
         self.has_item = random.random() < 0.3
     
     def on_death(self) -> Optional['Item']:
@@ -392,21 +392,21 @@ class Baton(Weapon):
     """Класс полицейской дубинки."""
     
     def __init__(self):
-        super().__init__("Полицейская дубинка", '🏏', damage=5, color='blue')
+        super().__init__("Полицейская дубинка","\033[38;5;130m╱\033[0m", damage=5, color='blue')
 
 
 class Shiv(Weapon):
     """Класс заточки."""
     
     def __init__(self):
-        super().__init__("Заточка",Back.BLACK + '🔪' + Back.RESET, damage=7, color='silver')
+        super().__init__("Заточка",Back.BLACK + '🗡' + Back.RESET, damage=7, color='silver')
 
 
 class Gun(Weapon):
     """Класс пистолета."""
     
     def __init__(self):
-        super().__init__("Пистолет",Back.BLACK + '🔫' + Back.RESET, damage=10, color='darkgrey')
+        super().__init__("Пистолет",Back.BLACK + '⌐' + Back.RESET, damage=10, color='darkgrey')
 
 
 class Food(Item):
@@ -427,28 +427,28 @@ class Cockroach(Food):
     """Класс таракана - минимальная еда."""
     
     def __init__(self):
-        super().__init__("Таракан",Back.BLACK + '🪳' + Back.RESET, nutrition=1, color='brown')
+        super().__init__("Таракан",Back.BLACK + "\033[38;5;130m∿\033[0m" + Back.RESET, nutrition=1, color='brown')
 
 
 class StaleBread(Food):
     """Класс засохшего хлеба - обычная еда."""
     
     def __init__(self):
-        super().__init__("Засохший хлеб",Back.BLACK + '🥖' + Back.RESET, nutrition=5, color='tan')
+        super().__init__("Засохший хлеб",Back.BLACK +"\033[38;5;130m≋\033[0m" + Back.RESET, nutrition=5, color='tan')
 
 
 class PrisonFood(Food):
     """Класс тюремного хрючева - средняя еда."""
     
     def __init__(self):
-        super().__init__("Тюремное хрючево",Back.BLACK + '🍲' + Back.RESET, nutrition=10, color='yellow')
+        super().__init__("Тюремное хрючево",Back.BLACK +"\033[38;5;130m◕\033[0m" + Back.RESET, nutrition=10, color='yellow')
 
 
 class CondensedMilk(Food):
     """Класс сгущенки - лучшая еда."""
     
     def __init__(self):
-        super().__init__("Сгущенка",Back.BLACK + '🍯' + Back.RESET, nutrition=20, color='white')
+        super().__init__("Сгущенка",Back.BLACK +"\033[38;5;130m◉\033[0m" + Back.RESET, nutrition=20, color='white')
 
 class Slot:
     """Базовый класс слота инвентаря."""
