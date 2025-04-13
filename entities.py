@@ -58,7 +58,7 @@ class Player(Character):
     """Класс игрового персонажа."""
     
     def __init__(self, x: int, y: int, name: str = "Заключенный"):
-        super().__init__(x, y, Fore.GREEN + Back.BLACK + '☺' + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
+        super().__init__(x, y, Fore.BLUE + Back.BLACK + '♦' + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
         self.equipped_weapon = Fists()
 
@@ -329,7 +329,7 @@ class Authority(NeutralEnemy):
     """Класс авторитета - сильного заключенного."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, 'A', "Авторитет", hp=40, defense=3, power=6)
+        super().__init__(x, y, Fore.MAGENTA + Back.BLACK + '₳' + Fore.RESET + Back.RESET, "Авторитет", hp=40, defense=3, power=6)
         self.weapon = Shiv()
         self.has_good_item = random.random() < 0.5
     
@@ -392,14 +392,14 @@ class Baton(Weapon):
     """Класс полицейской дубинки."""
     
     def __init__(self):
-        super().__init__("Полицейская дубинка","\033[38;5;130m╱\033[0m", damage=5, color='blue')
+        super().__init__("Полицейская дубинка",Back.BLACK + "\033[38;5;130m┤\033[0m" + Back.RESET, damage=5, color='blue')
 
 
 class Shiv(Weapon):
     """Класс заточки."""
     
     def __init__(self):
-        super().__init__("Заточка",Back.BLACK + '🗡' + Back.RESET, damage=7, color='silver')
+        super().__init__("Заточка",Back.BLACK + 'Ꮅ' + Back.RESET, damage=7, color='silver')
 
 
 class Gun(Weapon):

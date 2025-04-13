@@ -24,7 +24,7 @@ class Tile:
         elif self.tile_type == Tile.FLOOR:
             return Back.BLACK+" "+Back.RESET
         elif self.tile_type == Tile.WALL:
-            return Fore.LIGHTBLACK_EX + Back.BLACK+ "▓" + Fore.RESET + Back.RESET
+            return Fore.LIGHTBLACK_EX + Back.BLACK+ "░" + Fore.RESET + Back.RESET
         elif self.tile_type == Tile.CORRIDOR:
             return Back.BLACK+" "+Back.RESET
         elif self.tile_type == Tile.STAIRS_UP:
