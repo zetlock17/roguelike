@@ -86,32 +86,52 @@ def transition_to_game():
     def clear_screen():
         os.system('cls' if os.name == 'nt' else 'clear')
 
+    colors = [Fore.RED, Fore.MAGENTA, Fore.CYAN, Fore.WHITE]
+
+    for step in range(15):
+        clear_screen()
+        for i, line in enumerate(title_screen_lines):
+           
+            offset = random.randint(-1, 1) if step < 10 else 0
+            glitch_line = (" " * abs(offset) + line[:len(line) - abs(offset)]) if offset >= 0 else (line[abs(offset):] + " " * abs(offset))
+            
+            
+            if step < 12 and random.random() < 0.3:
+                glitch_line = list(glitch_line)
+                for _ in range(random.randint(1, 5)):
+                    pos = random.randint(0, len(glitch_line) - 1)
+                    glitch_line[pos] = random.choice(["#", "@", "%", "&", "█", "▒"])
+                glitch_line = "".join(glitch_line)
+            
+            
+            color = random.choice(colors) if step < 10 and random.random() < 0.4 else Fore.RESET
+            
+            style = Style.DIM if step > 8 and random.random() < step * 0.05 else Style.NORMAL
+            
+            print(color + style + glitch_line + Style.RESET_ALL)
+        time.sleep(0.02)
+
+    
     for step in range(20):
         clear_screen()
-        for line in title_screen_lines:
+        for i, line in enumerate(title_screen_lines):
             faded_line = ""
+            
+            wave = abs((i + step) % 10 - 5) / 5
+            threshold = step * 0.06 + wave * 0.2
+            
             for char in line:
-                # Случайное удаление символов с увеличивающейся вероятностью
-                if random.random() < step * 0.05:
+                if random.random() < threshold:
                     faded_line += " "
                 else:
                     faded_line += char
-            # Добавляем легкое "размытие" цветом
-            if step > 10:
-                print(Fore.LIGHTBLACK_EX + Style.DIM + faded_line + Style.RESET_ALL)
-            else:
-                print(faded_line)
-        time.sleep(0.03)
+            
+            
+            color = Fore.LIGHTBLACK_EX if step > 10 else Fore.RESET
+            style = Style.DIM if step > 12 else Style.NORMAL
+            print(color + style + faded_line + Style.RESET_ALL)
+        # time.sleep(0.03)
 
-    # Финальная стадия: плавное затемнение
-    for alpha in range(10, -1, -1):
-        clear_screen()
-        for line in title_screen_lines:
-            # Полное исчезновение с эффектом прозрачности
-            if random.random() < alpha / 10:
-                print(Fore.LIGHTBLACK_EX + Style.DIM + line + Style.RESET_ALL)
-            else:
-                print(" " * len(line))
-        time.sleep(0.05)
+
 
     clear_screen()
