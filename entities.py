@@ -3,8 +3,6 @@ from typing import List, Tuple, Optional
 from colorama import Fore, Back, Style
 
 
-
-
 class Character:
     """Базовый класс для всех персонажей в игре."""
     
@@ -116,8 +114,8 @@ class Enemy(Character):
         super().__init__(x, y, char, name, hp, defense, power)
         self.xp_reward = hp
     
-    def take_turn(self, player, game_map) -> None:
-        """Выполняет ход врага."""
+    def take_turn(self, player, game_map) -> Optional[str]:
+        """Выполняет ход врага. Возвращает строку сообщения, если произошло действие (например, атака)."""
         pass
 
 
@@ -128,15 +126,16 @@ class HostileEnemy(Enemy):
         super().__init__(x, y, char, name, hp, defense, power)
         self.view_range = view_range
     
-    def take_turn(self, player, game_map) -> None:
+    def take_turn(self, player, game_map) -> Optional[str]:
         """Выполняет ход враждебного противника."""
+        message = None
         if self.distance_to(player) <= self.view_range:
             distance = self.distance_to(player)
             
             if distance <= 1.5:
                 damage = self.power
                 player.take_damage(damage)
-                print(f"{self.name} атакует вас, нанося {damage} урона!")
+                message = f"{self.name} атакует вас, нанося {damage} урона!"
             else:
                 dx = 0
                 dy = 0
@@ -152,9 +151,9 @@ class HostileEnemy(Enemy):
                     dy = -1
 
                 if dx != 0 and self.move(dx, 0, game_map):
-                    return
+                    return message
                 if dy != 0 and self.move(0, dy, game_map):
-                    return
+                    return message
                 
                 if random.random() < 0.5:
                     self.move(random.choice([-1, 0, 1]), random.choice([-1, 0, 1]), game_map)
@@ -163,6 +162,7 @@ class HostileEnemy(Enemy):
                 dx = random.choice([-1, 0, 1])
                 dy = random.choice([-1, 0, 1])
                 self.move(dx, dy, game_map)
+        return message
 
 
 class NeutralEnemy(Enemy):
@@ -172,13 +172,16 @@ class NeutralEnemy(Enemy):
         super().__init__(x, y, char, name, hp, defense, power)
         self.aggravated = False
     
-    def take_turn(self, player, game_map) -> None:
+    def take_turn(self, player, game_map) -> Optional[str]:
         """Выполняет ход нейтрального противника."""
+        message = None
         if self.aggravated and self.distance_to(player) <= 8:
             if self.distance_to(player) <= 1.5:
                 damage = self.power
+                if hasattr(self, 'weapon') and self.weapon:
+                    damage += self.weapon.damage
                 player.take_damage(damage)
-                print(f"{self.name} атакует вас, нанося {damage} урона!")
+                message = f"{self.name} атакует вас, нанося {damage} урона!"
             else:
                 dx = 0
                 dy = 0
@@ -194,19 +197,22 @@ class NeutralEnemy(Enemy):
                     dy = -1
 
                 if dx != 0 and self.move(dx, 0, game_map):
-                    return
+                    return message
                 if dy != 0 and self.move(0, dy, game_map):
-                    return
+                    return message
         else:
             if random.random() < 0.3:
                 dx = random.choice([-1, 0, 1])
                 dy = random.choice([-1, 0, 1])
                 self.move(dx, dy, game_map)
+        return message
     
     def take_damage(self, amount: int) -> None:
         """При получении урона персонаж становится враждебным."""
+        aggravated_before = self.aggravated
         super().take_damage(amount)
-        self.aggravated = True
+        if not aggravated_before and not self.is_dead():
+            self.aggravated = True
 
 
 class Dog(HostileEnemy):
@@ -230,13 +236,14 @@ class Guard(Police):
         super().__init__(x, y, Fore.RED + Back.BLACK + '⚔' + Fore.RESET + Back.RESET, "Охранник", hp=30, defense=2, power=5)
         self.weapon = Baton()
     
-    def take_turn(self, player, game_map) -> None:
+    def take_turn(self, player, game_map) -> Optional[str]:
         """Охранник агрессивнее и наносит больше урона благодаря дубинке."""
+        message = None
         if self.distance_to(player) <= 8:
             if self.distance_to(player) <= 1.5:
                 damage = self.power + self.weapon.damage
                 player.take_damage(damage)
-                print(f"{self.name} бьет вас дубинкой, нанося {damage} урона!")
+                message = f"{self.name} бьет вас дубинкой, нанося {damage} урона!"
             else:
                 dx = 0
                 dy = 0
@@ -252,16 +259,17 @@ class Guard(Police):
                     dy = -1
                 
                 if dx != 0 and dy != 0 and self.move(dx, dy, game_map):
-                    return
+                    return message
                 if dx != 0 and self.move(dx, 0, game_map):
-                    return
+                    return message
                 if dy != 0 and self.move(0, dy, game_map):
-                    return
+                    return message
         else:
             if random.random() < 0.7:
                 dx = random.choice([-1, 0, 1])
                 dy = random.choice([-1, 0, 1])
                 self.move(dx, dy, game_map)
+        return message
 
 
 class Shooter(Police):
@@ -272,14 +280,15 @@ class Shooter(Police):
         self.weapon = Gun()
         self.shoot_range = 5
     
-    def take_turn(self, player, game_map) -> None:
+    def take_turn(self, player, game_map) -> Optional[str]:
         """Стрелок может атаковать на расстоянии."""
+        message = None
         distance = self.distance_to(player)
         
         if distance <= self.shoot_range:
             damage = self.power + self.weapon.damage
             player.take_damage(damage)
-            print(f"{self.name} стреляет в вас, нанося {damage} урона!")
+            message = f"{self.name} стреляет в вас, нанося {damage} урона!"
         elif distance <= 8:
             dx = 0
             dy = 0
@@ -295,19 +304,20 @@ class Shooter(Police):
                 dy = 1
 
             if dx != 0 and self.move(dx, 0, game_map):
-                return
+                return message
             if dy != 0 and self.move(0, dy, game_map):
-                return
+                return message
             
-            if distance <= self.shoot_range:
+            if self.distance_to(player) <= self.shoot_range:
                 damage = self.power + self.weapon.damage
                 player.take_damage(damage)
-                print(f"{self.name} стреляет в вас, нанося {damage} урона!")
+                message = f"{self.name} стреляет в вас, нанося {damage} урона!"
         else:
             if random.random() < 0.5:
                 dx = random.choice([-1, 0, 1])
                 dy = random.choice([-1, 0, 1])
                 self.move(dx, dy, game_map)
+        return message
 
 
 class Downcast(NeutralEnemy):
@@ -333,14 +343,15 @@ class Authority(NeutralEnemy):
         self.weapon = Shiv()
         self.has_good_item = random.random() < 0.5
     
-    def take_turn(self, player, game_map) -> None:
+    def take_turn(self, player, game_map) -> Optional[str]:
         """Авторитет опаснее когда разозлен."""
-        super().take_turn(player, game_map)
+        message = super().take_turn(player, game_map)
         
         if self.aggravated and self.distance_to(player) <= 1.5:
             damage = self.power + self.weapon.damage
             player.take_damage(damage)
-            print(f"{self.name} атакует вас заточкой, нанося {damage} урона!")
+            message = f"{self.name} атакует вас заточкой, нанося {damage} урона!"
+        return message
     
     def on_death(self) -> Optional['Item']:
         """При смерти может выпасть хороший предмет."""
@@ -348,6 +359,7 @@ class Authority(NeutralEnemy):
             items = [Shiv(), CondensedMilk()]
             return random.choice(items)
         return None
+
 
 class Item:
     """Базовый класс для всех предметов."""
@@ -449,6 +461,7 @@ class CondensedMilk(Food):
     
     def __init__(self):
         super().__init__("Сгущенка",Back.BLACK +"\033[38;5;130m◉\033[0m" + Back.RESET, nutrition=20, color='white')
+
 
 class Slot:
     """Базовый класс слота инвентаря."""

@@ -252,24 +252,17 @@ if __name__ == "__main__":
         if player_moved:
             dungeon[player.current_floor].update_fov(player.x, player.y)
 
-            for enemy in enemies:
-                if enemy.current_floor == player.current_floor:
-                    if dungeon[player.current_floor].tiles[enemy.x][enemy.y].explored:
-                        if enemy.distance_to(player) <= 1.5:
-                            if isinstance(enemy, Guard):
-                                damage = enemy.power + enemy.weapon.damage
-                            elif isinstance(enemy, Shooter) and enemy.distance_to(player) <= 1.5:
-                                damage = enemy.power + enemy.weapon.damage
-                            elif isinstance(enemy, Authority) and enemy.aggravated:
-                                damage = enemy.power + enemy.weapon.damage
-                            else:
-                                damage = enemy.power
-                            
-                            player.take_damage(damage)
-                            message += f"\n{enemy.name} атакует вас, нанося {damage} урона!"
-                        else:
-                            enemy.take_turn(player, dungeon)
+            # Process enemy turns
+            enemies_on_floor = [e for e in enemies if e.current_floor == player.current_floor]
+            for enemy in enemies_on_floor:
+                # Check if enemy is within explored area (optional, but good for performance/realism)
+                if dungeon[player.current_floor].tiles[enemy.x][enemy.y].explored:
+                    # Let the enemy decide its action (move or attack) based on its internal logic
+                    action_message = enemy.take_turn(player, dungeon) 
+                    if action_message: # Append enemy action message if take_turn returns one
+                         message += f"\n{action_message}"
 
+            # Check if player died after enemy turns
             if player.is_dead():
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("Вы погибли!")
