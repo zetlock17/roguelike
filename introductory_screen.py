@@ -7,7 +7,6 @@ from colorama import Fore, Back, Style, init
 from input_handler import get_char
 
 
-
 ITALIC_ON = "\033[3m"
 ITALIC_OFF = "\033[23m"
 subtitle = Fore.RED + Style.DIM

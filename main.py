@@ -10,11 +10,20 @@ from entities import (
     Item, Weapon
 )
 
+from statistic import Statistics
 from map_generator import MapGenerator
 from introductory_screen import show_title_screen, transition_to_game
 from input_handler import get_char
 
-
+def display_game_over(player: Player): # ф-ия отображения статистики
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("\n" + player.statistics.display())
+                                                                                                          
+    print("                                                                                        ")
+    print("            "+Fore.RED+ Style.BRIGHT+"              Нажмите любую клавишу для выхода..."+Style.RESET_ALL+Fore.RESET+"                           ")
+    print("                                                                                        ")
+    print("                                                                                        ")
+    get_char()
 
 if __name__ == "__main__":
     show_title_screen()
@@ -189,6 +198,7 @@ if __name__ == "__main__":
 
                 if target.is_dead():
                     message += f"\nВы убили {target.name}!"
+                    player.statistics.record_enemy_killed()
 
                     if hasattr(target, 'on_death'):
                         dropped_item = target.on_death()
@@ -212,6 +222,7 @@ if __name__ == "__main__":
                 if item_x == player.x and item_y == player.y and item_floor == player.current_floor:
                     player.inventory.add_item(item)
                     message = f"Вы подняли {item.name}."
+                    player.statistics.record_item_picked()
                     items.pop(i)
                     break
             else:
@@ -247,6 +258,7 @@ if __name__ == "__main__":
                     except ValueError:
                         continue
         elif action == 'q':
+            display_game_over(player)
             running = False
         
         if player_moved:
@@ -265,7 +277,6 @@ if __name__ == "__main__":
             # Check if player died after enemy turns
             if player.is_dead():
                 os.system('cls' if os.name == 'nt' else 'clear')
-                print("Вы погибли!")
-                print("\nНажмите любую клавишу для выхода...")
+                display_game_over(player)
                 get_char()
                 running = False

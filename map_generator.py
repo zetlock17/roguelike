@@ -22,15 +22,15 @@ class Tile:
         if self.tile_type == Tile.EMPTY:
             return " "
         elif self.tile_type == Tile.FLOOR:
-            return Back.BLACK+" "+Back.RESET
+            return Back.LIGHTBLACK_EX+" "+Back.RESET + Fore.RESET
         elif self.tile_type == Tile.WALL:
-            return Fore.LIGHTBLACK_EX + Back.BLACK+ "░" + Fore.RESET + Back.RESET
+            return Fore.LIGHTBLACK_EX + Back.BLACK + "▒" + Back.RESET + Fore.RESET
         elif self.tile_type == Tile.CORRIDOR:
-            return Back.BLACK+" "+Back.RESET
+            return Back.LIGHTBLACK_EX+" "+Back.RESET + Fore.RESET
         elif self.tile_type == Tile.STAIRS_UP:
-            return Back.BLACK + "\033[38;5;130m▤\033[0m" + Back.RESET
+            return Back.LIGHTBLACK_EX + Fore.LIGHTGREEN_EX + Style.BRIGHT+ "⬆︎" + Back.RESET + Style.RESET_ALL
         elif self.tile_type == Tile.STAIRS_DOWN:
-            return Back.BLACK + "\033[38;5;130m▤\033[0m" + Back.RESET
+            return Back.LIGHTBLACK_EX + Fore.LIGHTGREEN_EX + Style.BRIGHT+ "⬇︎" + Back.RESET + Style.RESET_ALL
         return " "
 
 class Room:
