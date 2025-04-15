@@ -126,9 +126,10 @@ if __name__ == "__main__":
     
     while running:
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("   ┌───────────────────────────────────────┐  ┌───────────────────────────────────────┐")
-        print(f"   │ Этаж {player.current_floor + 1} | HP: {player.hp}/{player.max_hp} | Оружие: {player.equipped_weapon.name} │  │    Используй WASD для передвижения    │")
-        print("   └───────────────────────────────────────┘  └───────────────────────────────────────┘")
+                                                                                                            
+        print("                                                                                       ")
+        print(Style.BRIGHT+Fore.CYAN+f"                            Этаж {player.current_floor + 1} "+Fore.RED + f"  HP: {player.hp}/{player.max_hp} "+Fore.MAGENTA+f"  Оружие: {player.equipped_weapon.name}     "+Fore.RESET + Style.RESET_ALL)
+        print("                                                                                       ")
         current_floor = player.current_floor
         floor = dungeon[current_floor]
         
@@ -166,9 +167,11 @@ if __name__ == "__main__":
             print(message)
             message = ""
 
-        print("\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐")    
-        print("│ SPACE — атака | E — использовать лестницу | G — поднять предмет | I — инвентарь | Q — выход │")
-        print("└─────────────────────────────────────────────────────────────────────────────────────────────┘")
+        print("\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐"+Fore.RESET) 
+        print("│"+Fore.GREEN+" SPACE"+Fore.RESET+" — атака |"+Fore.GREEN+" E"+Fore.RESET+" — использовать лестницу |"+Fore.GREEN+" G "+Fore.RESET+"— поднять предмет |"+Fore.GREEN+" I"+Fore.RESET+" — инвентарь |"+Fore.GREEN+" Q"+Fore.RESET+" — выход │"+Fore.RESET)
+        print("└─────────────────────────────────────────────────────────────────────────────────────────────┘"+Fore.RESET)
+
+        
         action = get_char()
         
         player_moved = False

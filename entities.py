@@ -57,7 +57,7 @@ class Player(Character):
     """Класс игрового персонажа."""
     
     def __init__(self, x: int, y: int, name: str = "Заключенный"):
-        super().__init__(x, y, Fore.GREEN + Back.LIGHTBLACK_EX + Style.BRIGHT + '✧' + Fore.RESET+ Back.RESET + Style.RESET_ALL, name, hp=100, defense=1, power=5)
+        super().__init__(x, y,Style.BRIGHT + "\033[32;47m✧\033[0m" + Style.RESET_ALL, name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
         self.equipped_weapon = Fists()
 
@@ -229,7 +229,7 @@ class Dog(HostileEnemy):
     """Класс враждебной собаки."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y,Back.LIGHTBLACK_EX + Fore.RED + Style.BRIGHT + "✺" + Back.RESET + Fore.RESET + Style.RESET_ALL, "Злая собака", hp=20, defense=0, power=3, view_range=8)
+        super().__init__(x, y,Style.BRIGHT + "\033[91;47m✺\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, "Злая собака", hp=20, defense=0, power=3, view_range=8)
 
 
 class Police(HostileEnemy):
@@ -243,7 +243,7 @@ class Guard(Police):
     """Класс охранника - полицейский с дубинкой."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.LIGHTRED_EX + Style.BRIGHT + Back.LIGHTBLACK_EX + '‼' + Back.RESET + Fore.RESET + Style.RESET_ALL, "Охранник", hp=30, defense=2, power=5)
+        super().__init__(x, y, Fore.LIGHTRED_EX + Style.BRIGHT +"\033[91;47m⚔︎\033[0m" + Fore.RESET + Style.RESET_ALL, "Охранник", hp=30, defense=2, power=5)
         self.weapon = Baton()
     
     def take_turn(self, player, game_map) -> Optional[str]:
@@ -286,19 +286,28 @@ class Shooter(Police):
     """Класс стрелка - полицейский с пистолетом."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.RED + Back.LIGHTBLACK_EX+ Style.BRIGHT +  '➹' + Fore.RESET + Back.RESET + Style.RESET_ALL, "Стрелок", hp=25, defense=1, power=3)
+        super().__init__(x, y, Fore.RED + Style.BRIGHT + "\033[91;47m➹\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, "Стрелок", hp=25, defense=1, power=1)
         self.weapon = Gun()
         self.shoot_range = 5
+        self.shoot_cooldown = 0
     
     def take_turn(self, player, game_map) -> Optional[str]:
         """Стрелок может атаковать на расстоянии."""
         message = None
         distance = self.distance_to(player)
+
+        if self.shoot_cooldown > 0:               #добавил кулдаун + щанс промаха
+            self.shoot_cooldown -= 1
+            return message
         
         if distance <= self.shoot_range:
-            damage = self.power + self.weapon.damage
-            player.take_damage(damage)
-            message =Fore.RED + f"{self.name} стреляет в вас, нанося {damage} урона!" + Fore.RESET
+            self.shoot_cooldown = 2
+            if random.random() < 0.7:  # 70% шанс попадания
+                damage = self.power + self.weapon.damage
+                player.take_damage(damage)
+                message = Fore.RED + f"{self.name} стреляет в вас, нанося {damage} урона!" + Fore.RESET
+            else:
+                message = Fore.YELLOW + f"{self.name} выстрелил, но промахнулся!" + Fore.RESET
         elif distance <= 8:
             dx = 0
             dy = 0
@@ -334,7 +343,7 @@ class Downcast(NeutralEnemy):
     """Класс опущенного заключенного."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.LIGHTYELLOW_EX + Style.BRIGHT + Back.LIGHTBLACK_EX+'☻' + Fore.RESET + Back.BLACK + Style.RESET_ALL, "Опущенный", hp=15, defense=0, power=2)
+        super().__init__(x, y,Style.BRIGHT + "\033[33;47m☻\033[0m" + Fore.RESET + Back.BLACK + Style.RESET_ALL, "Опущенный", hp=15, defense=0, power=2)
         self.has_item = random.random() < 0.3
     
     def on_death(self) -> Optional['Item']:
@@ -349,7 +358,7 @@ class Authority(NeutralEnemy):
     """Класс авторитета - сильного заключенного."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.MAGENTA + Style.BRIGHT + Back.LIGHTBLACK_EX + '∇' + Fore.RESET + Back.RESET + Style.RESET_ALL, "Авторитет", hp=40, defense=3, power=6)
+        super().__init__(x, y, Fore.MAGENTA + Style.BRIGHT + "\033[95;47m⛛\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, "Авторитет", hp=40, defense=3, power=6)
         self.weapon = Shiv()
         self.has_good_item = random.random() < 0.5
     
@@ -414,21 +423,21 @@ class Baton(Weapon):
     """Класс полицейской дубинки."""
     
     def __init__(self):
-        super().__init__("Полицейская дубинка",Back.LIGHTBLACK_EX + Style.BRIGHT + "\033[38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, damage=5, color='blue')
+        super().__init__("Полицейская дубинка",Style.BRIGHT + "\033[47;38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, damage=5, color='blue')
 
 
 class Shiv(Weapon):
     """Класс заточки."""
     
     def __init__(self):
-        super().__init__("Заточка",Fore.LIGHTRED_EX + Style.BRIGHT + Back.LIGHTBLACK_EX + '↾' + Back.RESET + Fore.RESET + Style.RESET_ALL, damage=7, color='silver') 
+        super().__init__("Заточка",Style.BRIGHT + "\033[30;47m↾\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, damage=7, color='silver') 
 
 
 class Gun(Weapon):
     """Класс пистолета."""
     
     def __init__(self):
-        super().__init__("Пистолет",Back.LIGHTBLACK_EX + Fore.LIGHTRED_EX +Style.BRIGHT + '⌐' + Fore.RESET+ Back.RESET + Style.RESET_ALL, damage=10, color='darkgrey')
+        super().__init__("Пистолет",Style.BRIGHT + "\033[47;30m⌐\033[0m" + Fore.RESET+ Back.RESET + Style.RESET_ALL, damage=10, color='darkgrey')
 
 
 class Food(Item):
@@ -449,28 +458,28 @@ class Cockroach(Food):
     """Класс таракана - минимальная еда."""
     
     def __init__(self):
-        super().__init__("Таракан",Back.LIGHTBLACK_EX + Style.BRIGHT + Fore.LIGHTWHITE_EX + "∿" + Fore.RESET +Back.RESET + Style.RESET_ALL, nutrition=1, color='brown')
+        super().__init__("Таракан",Style.BRIGHT + "\033[47;38;5;130m∿\033[0m" + Fore.RESET +Back.RESET + Style.RESET_ALL, nutrition=1, color='brown')
 
 
 class StaleBread(Food):
     """Класс засохшего хлеба - обычная еда."""
     
     def __init__(self):
-        super().__init__("Засохший хлеб",Back.LIGHTBLACK_EX + Style.BRIGHT +"\033[38;5;130m▰\033[0m" + Back.RESET + Style.RESET_ALL, nutrition=5, color='tan')
+        super().__init__("Засохший хлеб",Style.BRIGHT +"\033[47;38;5;130m⬬\033[0m"+ Back.RESET + Style.RESET_ALL, nutrition=5, color='tan')
 
 
 class PrisonFood(Food):
     """Класс тюремного хрючева - средняя еда."""
     
     def __init__(self):
-        super().__init__("Тюремное хрючево",Back.LIGHTBLACK_EX + Style.BRIGHT+ Fore.LIGHTWHITE_EX+ '●'+ Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=10, color='yellow')
+        super().__init__("Тюремное хрючево",Back.LIGHTBLACK_EX + Style.BRIGHT+ Fore.LIGHTWHITE_EX+ "\033[47;38;5;130m✱\033[0m"+ Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=10, color='yellow')
 
 
 class CondensedMilk(Food):
     """Класс сгущенки - лучшая еда."""
     
     def __init__(self):
-        super().__init__("Сгущенка",Back.LIGHTBLACK_EX + Style.BRIGHT +Fore.LIGHTWHITE_EX+'◉'+Fore.RESET + Back.RESET + Style.RESET_ALLs, nutrition=20, color='white')
+        super().__init__("Сгущенка",Back.LIGHTBLACK_EX + Style.BRIGHT +Fore.LIGHTWHITE_EX+'◎'+Fore.RESET + Back.RESET + Style.RESET_ALLs, nutrition=20, color='white')
 
 
 class Slot:
