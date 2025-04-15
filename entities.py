@@ -145,7 +145,7 @@ class HostileEnemy(Enemy):
             if distance <= 1.5:
                 damage = self.power
                 player.take_damage(damage)
-                message = f"{self.name} атакует вас, нанося {damage} урона!"
+                message = Fore.RED + f"{self.name} атакует вас, нанося {damage} урона!" + Fore.RESET
             else:
                 dx = 0
                 dy = 0
@@ -191,7 +191,7 @@ class NeutralEnemy(Enemy):
                 if hasattr(self, 'weapon') and self.weapon:
                     damage += self.weapon.damage
                 player.take_damage(damage)
-                message = f"{self.name} атакует вас, нанося {damage} урона!"
+                message = Fore.RED + f"{self.name} атакует вас, нанося {damage} урона!" + Fore.RESET
             else:
                 dx = 0
                 dy = 0
@@ -253,7 +253,7 @@ class Guard(Police):
             if self.distance_to(player) <= 1.5:
                 damage = self.power + self.weapon.damage
                 player.take_damage(damage)
-                message = f"{self.name} бьет вас дубинкой, нанося {damage} урона!"
+                message = Fore.RED +f"{self.name} бьет вас дубинкой, нанося {damage} урона!" + Fore.RESET
             else:
                 dx = 0
                 dy = 0
@@ -298,7 +298,7 @@ class Shooter(Police):
         if distance <= self.shoot_range:
             damage = self.power + self.weapon.damage
             player.take_damage(damage)
-            message = f"{self.name} стреляет в вас, нанося {damage} урона!"
+            message =Fore.RED + f"{self.name} стреляет в вас, нанося {damage} урона!" + Fore.RESET
         elif distance <= 8:
             dx = 0
             dy = 0
@@ -321,7 +321,7 @@ class Shooter(Police):
             if self.distance_to(player) <= self.shoot_range:
                 damage = self.power + self.weapon.damage
                 player.take_damage(damage)
-                message = f"{self.name} стреляет в вас, нанося {damage} урона!"
+                message = Fore.RED + f"{self.name} стреляет в вас, нанося {damage} урона!" + Fore.RESET
         else:
             if random.random() < 0.5:
                 dx = random.choice([-1, 0, 1])
@@ -360,7 +360,7 @@ class Authority(NeutralEnemy):
         if self.aggravated and self.distance_to(player) <= 1.5:
             damage = self.power + self.weapon.damage
             player.take_damage(damage)
-            message = f"{self.name} атакует вас заточкой, нанося {damage} урона!"
+            message =Fore.RED + f"{self.name} атакует вас заточкой, нанося {damage} урона!" + Fore.RESET
         return message
     
     def on_death(self) -> Optional['Item']:
@@ -441,7 +441,7 @@ class Food(Item):
     def use(self, user: Player) -> bool:
         """Съесть пищу, восстановив здоровье."""
         health_recovered = user.eat_food(self)
-        print(f"Вы съели {self.name} и восстановили {health_recovered} здоровья.")
+        print(Fore.GREEN + f"Вы съели {self.name} и восстановили {health_recovered} здоровья." + Fore.RESET)
         return True
 
 
