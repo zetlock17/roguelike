@@ -128,7 +128,7 @@ if __name__ == "__main__":
         os.system('cls' if os.name == 'nt' else 'clear')
                                                                                                             
         print("                                                                                       ")
-        print(Style.BRIGHT+Fore.CYAN+f"                            Этаж {player.current_floor + 1} "+Fore.RED + f"  HP: {player.hp}/{player.max_hp} "+Fore.MAGENTA+f"  Оружие: {player.equipped_weapon.name}     "+Fore.RESET + Style.RESET_ALL)
+        print(Style.BRIGHT+Fore.CYAN+f"                                 Этаж {player.current_floor + 1} "+Fore.RED + f"  HP: {player.hp}/{player.max_hp} "+Fore.MAGENTA+f"  Оружие: {player.equipped_weapon.name}     "+Fore.RESET + Style.RESET_ALL)
         print("                                                                                       ")
         current_floor = player.current_floor
         floor = dungeon[current_floor]
@@ -232,8 +232,10 @@ if __name__ == "__main__":
                 message = "Здесь нет предметов."
         elif action == 'i':
             os.system('cls' if os.name == 'nt' else 'clear')
-            print("=== ИНВЕНТАРЬ ===")
-            print(f"Экипировано: {player.equipped_weapon.name}")
+            print("                                   "+Fore.GREEN+"ИНВЕНТАРЬ"+Fore.RESET)
+            print(" ")
+            print(f"Экипировано:"+Fore.RED+f" {player.equipped_weapon.name}"+Fore.RESET)
+            print(" ")
             
             all_items = player.inventory.get_all_items()
             if not all_items:
@@ -241,8 +243,9 @@ if __name__ == "__main__":
             else:
                 for i, item in enumerate(all_items):
                     print(f"{i+1}. {item.name}")
+                    print(" ")
                 
-                print("\nВыберите предмет для использования (или Esc для выхода):")
+                print(Fore.LIGHTBLACK_EX+Style.DIM+"\n           Выберите предмет для использования (или Esc для выхода):"+Fore.RESET+Style.RESET_ALL)
                 
                 while True:
                     key = get_char()
