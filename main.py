@@ -21,7 +21,7 @@ def display_game_over(player: Player): # ф-ия отображения стат
     print("\n" + player.statistics.display())
                                                                                                           
     print("                                                                                        ")
-    print("            "+Fore.RED+ Style.BRIGHT+"              Нажмите любую клавишу для выхода..."+Style.RESET_ALL+Fore.RESET+"                           ")
+    print("              "+Fore.RED+ Style.BRIGHT+"                Нажмите любую клавишу для выхода..."+Style.RESET_ALL+Fore.RESET+"                           ")
     print("                                                                                        ")
     print("                                                                                        ")
     get_char()
@@ -74,24 +74,15 @@ def display_dialog(title, message, options=None):
             except ValueError:
                 if key == '\x1b':  # Escape key
                     return -1
-
-def display_victory_screen(player: Player):
-    """Отображает экран победы."""
+                
+def display_victory_screen(player: Player): # ф-ия отображения статистики
     os.system('cls' if os.name == 'nt' else 'clear')
-    
-    print("\n\n\n")
-    print(Style.BRIGHT + Fore.GREEN + "                                 П О Б Е Д А !" + Style.RESET_ALL)
-    print("\n\n")
-    print("                Вы собрали все три ключа и совершили побег из тюрьмы!")
-    print("\n")
-    print("         После долгих лет заключения вы наконец-то снова обрели свободу...")
-    print("\n")
-    print("         ...или это только начало вашего пути?")
-    print("\n\n")
-    print(player.statistics.display())
-    print("\n\n")
-    print(Fore.YELLOW + "                      Нажмите любую клавишу для выхода..." + Fore.RESET)
-    
+    print("\n" + player.statistics.win_display())
+                                                                                                          
+    print("                                                                                        ")
+    print("              "+Fore.GREEN+ Style.BRIGHT+"                Нажмите любую клавишу для выхода..."+Style.RESET_ALL+Fore.RESET+"                           ")
+    print("                                                                                        ")
+    print("                                                                                        ")
     get_char()
 
 if __name__ == "__main__":
@@ -223,7 +214,7 @@ if __name__ == "__main__":
         os.system('cls' if os.name == 'nt' else 'clear')
                                                                                                             
         print("                                                                                       ")
-        print(Style.BRIGHT+Fore.CYAN+f"                                 Этаж {player.current_floor + 1} "+Fore.RED + f"  HP: {player.hp}/{player.max_hp} "+Fore.MAGENTA+f"  Оружие: {player.equipped_weapon.name}     "+Fore.RESET + Style.RESET_ALL)
+        print(Style.BRIGHT+Fore.CYAN+f"                           Этаж {player.current_floor + 1} "+Fore.RED + f"  HP: {player.hp}/{player.max_hp} "+Fore.MAGENTA+f"  Оружие: {player.equipped_weapon.name}     "+Fore.RESET + Style.RESET_ALL)
         print("                                                                                       ")
         current_floor = player.current_floor
         floor = dungeon[current_floor]
@@ -262,9 +253,9 @@ if __name__ == "__main__":
             print(message)
             message = ""
 
-        print("\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐"+Fore.RESET) 
-        print("│"+Fore.GREEN+" SPACE"+Fore.RESET+" — атака |"+Fore.GREEN+" E"+Fore.RESET+" — использовать лестницу |"+Fore.GREEN+" G "+Fore.RESET+"— поднять предмет |"+Fore.GREEN+" F"+Fore.RESET+" — взаимодействие |"+Fore.GREEN+" I"+Fore.RESET+" — инвентарь |"+Fore.GREEN+" Q"+Fore.RESET+" — выход │"+Fore.RESET)
-        print("└─────────────────────────────────────────────────────────────────────────────────────────────┘"+Fore.RESET)
+        print("\n "+Fore.RESET) 
+        print(Fore.GREEN+"                   SPACE"+Fore.RESET+" — атака  "+Fore.GREEN+" E"+Fore.RESET+" — использовать лестницу  "+Fore.GREEN+" G "+Fore.RESET+"— поднять предмет  ")
+        print(Fore.GREEN+"                           F"+Fore.RESET+" — взаимодействие  "+Fore.GREEN+" I"+Fore.RESET+" — инвентарь  "+Fore.GREEN+" Q"+Fore.RESET+" — выход  "+Fore.RESET)
 
         
         action = get_char()

@@ -58,7 +58,7 @@ class Player(Character):
     """Класс игрового персонажа."""
     
     def __init__(self, x: int, y: int, name: str = "Заключенный"):
-        super().__init__(x, y, Fore.BLUE + Back.BLACK + '♦' + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
+        super().__init__(x, y,Style.BRIGHT + "\033[32;47m✧\033[0m" + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
         self.equipped_weapon = Fists()
         self.inventory.weapon_slot.item = self.equipped_weapon
@@ -378,7 +378,7 @@ class Authority(NeutralEnemy):
     """Класс авторитета - сильного заключенного."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.MAGENTA + Back.BLACK + '₳' + Fore.RESET + Back.RESET, "Авторитет", hp=40, defense=3, power=6)
+        super().__init__(x, y,Fore.MAGENTA + Style.BRIGHT + "\033[95;47m⛛\033[0m" + Fore.RESET + Back.RESET, "Авторитет", hp=40, defense=3, power=6)
         self.weapon = Shiv()
         self.has_good_item = random.random() < 0.5
         self.has_given_riddle = False
@@ -469,7 +469,7 @@ class Key(Item):
     
     def __init__(self, key_number: int = 1):
         super().__init__(f"Ключ #{key_number}", 
-                        Back.BLACK + Fore.YELLOW + "♔" + Fore.RESET + Back.RESET, 
+                        Style.BRIGHT + "\033[33;47m♔\033[0m" + Fore.RESET + Back.RESET, 
                         color='yellow')
         self.key_number = key_number
     
@@ -557,14 +557,14 @@ class PrisonFood(Food):
     """Класс тюремного хрючева - средняя еда."""
     
     def __init__(self):
-        super().__init__("Тюремное хрючево",Back.LIGHTBLACK_EX + Style.BRIGHT+ Fore.LIGHTWHITE_EX+ "\033[47;38;5;130m✱\033[0m"+ Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=10, color='yellow')
+        super().__init__("Тюремное хрючево", Style.BRIGHT+ Fore.LIGHTWHITE_EX+ "\033[47;38;5;130m✱\033[0m"+ Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=10, color='yellow')
 
 
 class CondensedMilk(Food):
     """Класс сгущенки - лучшая еда."""
     
     def __init__(self):
-        super().__init__("Сгущенка",Back.LIGHTBLACK_EX + Style.BRIGHT +Fore.LIGHTWHITE_EX+'◎'+Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=20, color='white')
+        super().__init__("Сгущенка",Style.BRIGHT +Fore.LIGHTWHITE_EX+'◎'+Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=20, color='white')
 
 
 class Slot:

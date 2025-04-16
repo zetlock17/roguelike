@@ -36,24 +36,50 @@ class Statistics:
     
     def display(self):
         return (
+                                                                                                               
             "                                                                                        \n"
             "                                                                                        \n"
-            "     "+Fore.RED+"        ████    ███    █   █   █████      ████    █   █   █████    ████             "+Fore.RESET+" \n"
-            "    "+Fore.RED+"        █       ██ ██   ██ ██   █         █    █   █   █   █       █   █             "+Fore.RESET+" \n"
-            "    "+Fore.RED+"        █  █    █   █   █ █ █   █████     █    █   █   █   ████    ████              "+Fore.RESET+" \n"
-            "    "+Fore.RED+"        █   █   █████   █   █   █         █    █    █ █    █       █   █             "+Fore.RESET+" \n"
-            "    "+Fore.RED+"         ███    █   █   █   █   █████      ████      █     █████   █   █             "+Fore.RESET+" \n"
-            "                                                                                         \n"
+            "     "+Fore.RED+"     ███████╗   █████╗  ██    ██╗ ███████╗      ████║   ██   ██╗ ███████╗ ██████╗               "+Fore.RESET+" \n"
+            "    "+Fore.RED+"     ██╔═════╝  ██╔══██╗ ███  ███║ ██╔════╝    ██    ██╗ ██   ██║ ██╔════╝ ██   ██╗            "+Fore.RESET+" \n"
+            "    "+Fore.RED+"     ██║   ██╚╗ ███████║ ██║██ ██║ █████╗      ██    ██║ ██   ██║ █████╗   ██  ██╗                "+Fore.RESET+" \n"
+            "    "+Fore.RED+"     ██║    ██║ ██╔══██║ ██║   ██║ ██╔══╝      ██    ██║ ╚██ ██╔╝ ██╔══╝   █████═╗           "+Fore.RESET+" \n"
+            "    "+Fore.RED+"     ╚███████╔╝ ██║  ██║ ██║   ██║ ███████╗    ╚██████╔╝  ╚██╔═╝  ███████╗ ██╔╗██║               "+Fore.RESET+" \n"
+            "    "+Fore.RED+"      ╚══════╝  ╚═╝  ╚═╝ ╚═╝   ╚═╝ ╚══════╝     ╚═════╝    ╚═╝    ╚══════╝ ╚═╝╚══╝            "+Fore.RESET+"       \n"
             "                                                                                        \n"
+                                                                                                       
             " \n"
             " \n"
             " \n"
-            f"                 Убито врагов: {self.enemies_killed}                   Подобрано предметов: {self.items_picked}\n"
+            f"                    Убито врагов: {self.enemies_killed}                   Подобрано предметов: {self.items_picked}\n"
             " \n"
-            f"                 Съедено еды: {self.food_eaten}                    Посещено этажей: {len(self.floors_visited)}\n"
+            f"                    Съедено еды: {self.food_eaten}                    Посещено этажей: {len(self.floors_visited)}\n"
             " \n"
-            f"                 Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
+            f"                    Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
             " \n"
-            f"                 Найдено ключей: {self.keys_found}/3\n"
+
+        )
+    
+    def win_display(self):
+        return (
+                                                                                                               
+            "                                                                                        \n"
+            "                                                                                        \n"
+            "     "+Fore.GREEN+"     ███████╗   █████╗  ██    ██╗ ███████╗      ████║   ██   ██╗ ███████╗ ██████╗               "+Fore.RESET+" \n"
+            "    "+Fore.GREEN+"     ██╔═════╝  ██╔══██╗ ███  ███║ ██╔════╝    ██    ██╗ ██   ██║ ██╔════╝ ██   ██╗            "+Fore.RESET+" \n"
+            "    "+Fore.GREEN+"     ██║   ██╚╗ ███████║ ██║██ ██║ █████╗      ██    ██║ ██   ██║ █████╗   ██  ██╗                "+Fore.RESET+" \n"
+            "    "+Fore.GREEN+"     ██║    ██║ ██╔══██║ ██║   ██║ ██╔══╝      ██    ██║ ╚██ ██╔╝ ██╔══╝   █████═╗           "+Fore.RESET+" \n"
+            "    "+Fore.GREEN+"     ╚███████╔╝ ██║  ██║ ██║   ██║ ███████╗    ╚██████╔╝  ╚██╔═╝  ███████╗ ██╔╗██║               "+Fore.RESET+" \n"
+            "    "+Fore.GREEN+"      ╚══════╝  ╚═╝  ╚═╝ ╚═╝   ╚═╝ ╚══════╝     ╚═════╝    ╚═╝    ╚══════╝ ╚═╝╚══╝            "+Fore.RESET+"       \n"
+            "                                                                                        \n"
+                                                                                                       
             " \n"
+            " \n"
+            " \n"
+            f"                   Убито врагов: {self.enemies_killed}                   Подобрано предметов: {self.items_picked}\n"
+            " \n"
+            f"                   Съедено еды: {self.food_eaten}                    Посещено этажей: {len(self.floors_visited)}\n"
+            " \n"
+            f"                   Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
+            " \n"
+
         )
