@@ -2,12 +2,13 @@ import random
 import os
 import msvcrt
 import time
+import json
 from colorama import Fore, Back, Style
 
 from entities import (
     Player, Dog, Guard, Shooter, Downcast, Authority,
     Fists, Baton, Shiv, Gun, Cockroach, StaleBread, PrisonFood, CondensedMilk,
-    Item, Weapon
+    Item, Weapon, Key
 )
 
 from statistic import Statistics
@@ -25,6 +26,74 @@ def display_game_over(player: Player): # ф-ия отображения стат
     print("                                                                                        ")
     get_char()
 
+def display_dialog(title, message, options=None):
+    """Отображает диалоговое окно с вариантами ответов."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    width = max(len(title), len(message), 80)
+    
+    print("┌" + "─" * width + "┐")
+    print(f"│{title.center(width)}│")
+    print("├" + "─" * width + "┤")
+    
+    # Split message into lines that fit within the dialog box
+    words = message.split()
+    lines = []
+    current_line = ""
+    
+    for word in words:
+        if len(current_line) + len(word) + 1 <= width - 2:  # -2 for borders
+            if current_line:
+                current_line += " " + word
+            else:
+                current_line = word
+        else:
+            lines.append(current_line)
+            current_line = word
+    
+    if current_line:
+        lines.append(current_line)
+    
+    for line in lines:
+        print(f"│{line.ljust(width)}│")
+    
+    if options:
+        print("├" + "─" * width + "┤")
+        for i, option in enumerate(options):
+            print(f"│ {i+1}. {option.ljust(width-4)}│")
+    
+    print("└" + "─" * width + "┘")
+    
+    if options:
+        while True:
+            key = get_char()
+            try:
+                choice = int(key) - 1
+                if 0 <= choice < len(options):
+                    return choice
+            except ValueError:
+                if key == '\x1b':  # Escape key
+                    return -1
+
+def display_victory_screen(player: Player):
+    """Отображает экран победы."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    print("\n\n\n")
+    print(Style.BRIGHT + Fore.GREEN + "                                 П О Б Е Д А !" + Style.RESET_ALL)
+    print("\n\n")
+    print("                Вы собрали все три ключа и совершили побег из тюрьмы!")
+    print("\n")
+    print("         После долгих лет заключения вы наконец-то снова обрели свободу...")
+    print("\n")
+    print("         ...или это только начало вашего пути?")
+    print("\n\n")
+    print(player.statistics.display())
+    print("\n\n")
+    print(Fore.YELLOW + "                      Нажмите любую клавишу для выхода..." + Fore.RESET)
+    
+    get_char()
+
 if __name__ == "__main__":
     show_title_screen()
     transition_to_game()
@@ -35,6 +104,8 @@ if __name__ == "__main__":
     player = Player(start_x, start_y, "Заключенный Жужун")
 
     enemies = []
+    
+    key_holder_added = False
     
     for floor_idx, floor in enumerate(dungeon):
         for room in floor.rooms[1:]:
@@ -70,7 +141,7 @@ if __name__ == "__main__":
                         enemy.current_floor = floor_idx
                         enemies.append(enemy)
                     elif enemy_type < 0.8:
-                        enemy = Authority(x, y)
+                        enemy = Dog(x, y)
                         enemy.current_floor = floor_idx
                         enemies.append(enemy)
                     else:
@@ -79,7 +150,7 @@ if __name__ == "__main__":
                         enemies.append(enemy)
                 else:
                     if enemy_type < 0.3:
-                        enemy = Authority(x, y)
+                        enemy = Dog(x, y)
                         enemy.current_floor = floor_idx
                         enemies.append(enemy)
                     elif enemy_type < 0.6:
@@ -90,6 +161,21 @@ if __name__ == "__main__":
                         enemy = Guard(x, y)
                         enemy.current_floor = floor_idx
                         enemies.append(enemy)
+                    enemy = Authority(x, y)
+                    enemy.current_floor = floor_idx
+                    enemies.append(enemy)
+        
+        # Add a key-holding enemy on the last floor (guaranteed)
+        if floor_idx == len(dungeon) - 1 and not key_holder_added:
+            room = random.choice(floor.rooms)
+            x = random.randint(room.x1 + 1, room.x2 - 1)
+            y = random.randint(room.y1 + 1, room.y2 - 1)
+            
+            if 0 <= x < floor.width and 0 <= y < floor.height:
+                key_holder = Shooter(x, y, has_key=True)
+                key_holder.current_floor = floor_idx
+                enemies.append(key_holder)
+                key_holder_added = True
 
     items = []
 
@@ -116,6 +202,15 @@ if __name__ == "__main__":
                     items.append((Baton(), x, y, floor_idx))
                 else:
                     items.append((Gun(), x, y, floor_idx))
+    
+    # Add a random key on one of the floors
+    random_key_floor = random.randint(0, len(dungeon) - 1)
+    room = random.choice(dungeon[random_key_floor].rooms)
+    key_x = random.randint(room.x1 + 1, room.x2 - 1)
+    key_y = random.randint(room.y1 + 1, room.y2 - 1)
+    
+    if 0 <= key_x < dungeon[random_key_floor].width and 0 <= key_y < dungeon[random_key_floor].height:
+        items.append((Key(3), key_x, key_y, random_key_floor))
 
     running = True
     message = ""
@@ -168,7 +263,7 @@ if __name__ == "__main__":
             message = ""
 
         print("\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐"+Fore.RESET) 
-        print("│"+Fore.GREEN+" SPACE"+Fore.RESET+" — атака |"+Fore.GREEN+" E"+Fore.RESET+" — использовать лестницу |"+Fore.GREEN+" G "+Fore.RESET+"— поднять предмет |"+Fore.GREEN+" I"+Fore.RESET+" — инвентарь |"+Fore.GREEN+" Q"+Fore.RESET+" — выход │"+Fore.RESET)
+        print("│"+Fore.GREEN+" SPACE"+Fore.RESET+" — атака |"+Fore.GREEN+" E"+Fore.RESET+" — использовать лестницу |"+Fore.GREEN+" G "+Fore.RESET+"— поднять предмет |"+Fore.GREEN+" F"+Fore.RESET+" — взаимодействие |"+Fore.GREEN+" I"+Fore.RESET+" — инвентарь |"+Fore.GREEN+" Q"+Fore.RESET+" — выход │"+Fore.RESET)
         print("└─────────────────────────────────────────────────────────────────────────────────────────────┘"+Fore.RESET)
 
         
@@ -226,10 +321,45 @@ if __name__ == "__main__":
                     player.inventory.add_item(item)
                     message = f"Вы подняли {item.name}."
                     player.statistics.record_item_picked()
+                    
+                    # If it's a key, update the key count
+                    if isinstance(item, Key):
+                        player.keys_found += 1
+                        player.statistics.record_key_found()
+                        message = f"Вы нашли {item.name}! ({player.keys_found}/3)"
+                        
                     items.pop(i)
+                    
+                    # Check for victory
+                    if player.has_all_keys():
+                        display_victory_screen(player)
+                        running = False
+                        break
+                    
                     break
             else:
                 message = "Здесь нет предметов."
+        elif action == 'f':  # New interaction key
+            interaction_result = player.interact_with_character(dungeon, enemies)
+            if interaction_result:
+                interaction_message, interacted_character = interaction_result
+                
+                if isinstance(interacted_character, Authority) and hasattr(interacted_character, 'current_riddle'):
+                    riddle = interacted_character.current_riddle
+                    options = riddle.get('варианты', [])
+                    
+                    title = f"Разговор с {interacted_character.name}"
+                    answer_idx = display_dialog(title, interaction_message, options)
+                    
+                    if answer_idx >= 0:  # If not ESC
+                        success, result_message = interacted_character.answer_riddle(answer_idx, player)
+                        display_dialog(title, result_message)
+                        if not success:
+                            message = result_message
+                else:
+                    display_dialog(f"Разговор с {interacted_character.name}", interaction_message)
+            else:
+                message = "Рядом никого нет для взаимодействия."
         elif action == 'i':
             os.system('cls' if os.name == 'nt' else 'clear')
             print("                                   "+Fore.GREEN+"ИНВЕНТАРЬ"+Fore.RESET)
@@ -265,6 +395,11 @@ if __name__ == "__main__":
                         continue
         elif action == 'q':
             display_game_over(player)
+            running = False
+        
+        # Check for victory after getting a key from Authority (or other source)
+        if player.has_all_keys() and running:
+            display_victory_screen(player)
             running = False
         
         if player_moved:

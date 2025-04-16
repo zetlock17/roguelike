@@ -11,6 +11,7 @@ class Statistics:
         self.floors_visited = {0} 
         self.attacks_made = 0
         self.damage_taken = 0
+        self.keys_found = 0
     
     def record_enemy_killed(self):
         self.enemies_killed += 1
@@ -30,19 +31,20 @@ class Statistics:
     def record_damage_taken(self, damage: int):
         self.damage_taken += damage
     
+    def record_key_found(self):
+        self.keys_found += 1
+    
     def display(self):
         return (
-                                                                                                               
             "                                                                                        \n"
             "                                                                                        \n"
             "     "+Fore.RED+"        ████    ███    █   █   █████      ████    █   █   █████    ████             "+Fore.RESET+" \n"
             "    "+Fore.RED+"        █       ██ ██   ██ ██   █         █    █   █   █   █       █   █             "+Fore.RESET+" \n"
-            "    "+Fore.RED+"        █  █    █   █   █ █ █   █████     █    █   █   █   █████   ████              "+Fore.RESET+" \n"
+            "    "+Fore.RED+"        █  █    █   █   █ █ █   █████     █    █   █   █   ████    ████              "+Fore.RESET+" \n"
             "    "+Fore.RED+"        █   █   █████   █   █   █         █    █    █ █    █       █   █             "+Fore.RESET+" \n"
             "    "+Fore.RED+"         ███    █   █   █   █   █████      ████      █     █████   █   █             "+Fore.RESET+" \n"
             "                                                                                         \n"
             "                                                                                        \n"
-                                                                                                       
             " \n"
             " \n"
             " \n"
@@ -52,5 +54,6 @@ class Statistics:
             " \n"
             f"                 Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
             " \n"
-
+            f"                 Найдено ключей: {self.keys_found}/3\n"
+            " \n"
         )

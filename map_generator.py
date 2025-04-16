@@ -46,6 +46,9 @@ class Room:
                 self.y1 <= other.y2 and self.y2 >= other.y1)
 
 class Floor:
+    # Класс Floor представляет собой отдельный этаж (уровень) подземелья.
+    # Он хранит информацию о размере этажа, всех плитках (tiles), комнатах и лестницах.
+    
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
@@ -63,16 +66,30 @@ class Floor:
                         self.tiles[tx][ty].explored = True
 
     def is_blocked(self, x: int, y: int) -> bool:
+        # Проверяет, заблокирована ли позиция (x, y) для перемещения.
+        # Возвращает True, если:
+        # - позиция за пределами карты
+        # - в позиции находится стена (WALL) или пустота (EMPTY)
         if 0 <= x < self.width and 0 <= y < self.height:
             return self.tiles[x][y].tile_type in (Tile.WALL, Tile.EMPTY)
         return True
 
     def is_valid_position(self, x: int, y: int) -> bool:
+        # Проверяет, находится ли позиция (x, y) в пределах карты.
+        # Используется для предотвращения выхода за границы карты.
         return 0 <= x < self.width and 0 <= y < self.height
 
 class MapGenerator:
+    # Класс MapGenerator отвечает за процедурную генерацию многоуровневого подземелья.
+    # Он создает этажи с комнатами, коридорами и лестницами между уровнями.
+    
     def __init__(self, width: int = 80, height: int = 40, num_floors: int = 3,
                  max_rooms: int = 15, min_room_size: int = 5, max_room_size: int = 10):
+        # Инициализация генератора карты с параметрами:
+        # - width, height: размеры каждого этажа
+        # - num_floors: количество уровней подземелья
+        # - max_rooms: максимальное число комнат на этаж
+        # - min/max_room_size: минимальный/максимальный размер комнат
         self.width = width
         self.height = height
         self.num_floors = num_floors
@@ -82,6 +99,8 @@ class MapGenerator:
         self.floors: List[Floor] = []
 
     def generate_map(self) -> List[Floor]:
+        # Основной метод генерации карты, создающий все этажи подземелья
+        # Для каждого этажа вызывает _generate_floor(), затем добавляет лестницы между этажами
         self.floors = []
         for floor_num in range(self.num_floors):
             floor = self._generate_floor()
@@ -96,6 +115,12 @@ class MapGenerator:
         return self.floors
 
     def _generate_floor(self) -> Floor:
+        # Генерирует один этаж подземелья:
+        # 1. Создает объект Floor
+        # 2. Пытается разместить случайные комнаты (до max_rooms)
+        # 3. При размещении проверяет, не пересекается ли новая комната с существующими
+        # 4. Соединяет каждую новую комнату с ближайшей из уже соединенных
+        # 5. В конце проверяет связность всех комнат
         floor = Floor(self.width, self.height)
         safe_margin = 3
         connected_rooms = []
@@ -123,6 +148,9 @@ class MapGenerator:
         return floor
 
     def _create_room(self, floor: Floor, room: Room) -> None:
+        # Создает комнату на карте, устанавливая соответствующие типы плиток:
+        # - Внутренность комнаты: плитки типа FLOOR
+        # - Периметр комнаты: плитки типа WALL
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
                 floor.tiles[x][y].tile_type = Tile.FLOOR
@@ -134,6 +162,10 @@ class MapGenerator:
             floor.tiles[room.x2][y].tile_type = Tile.WALL
 
     def _connect_rooms(self, floor: Floor, room1: Room, room2: Room) -> None:
+        # Соединяет две комнаты коридором:
+        # 1. Находит подходящие точки выхода из каждой комнаты
+        # 2. Создает L-образный коридор между этими точками
+        # 3. Добавляет выходы в список отверстий каждой комнаты
         x1, y1 = room1.center
         x2, y2 = room2.center
 
@@ -161,6 +193,9 @@ class MapGenerator:
             self._create_horizontal_tunnel(floor, ox1, ox2, oy2)
 
     def _find_valid_opening(self, floor: Floor, room: Room, target_x: int, target_y: int) -> Tuple[int, int]:
+        # Ищет лучшую точку для прокладки коридора из комнаты:
+        # 1. Перебирает все стены комнаты
+        # 2. Находит точку, ближайшую к целевым координатам
         best_opening = None
         min_dist = float('inf')
         center_x, center_y = room.center
@@ -184,6 +219,7 @@ class MapGenerator:
         return best_opening or room.center
 
     def _create_horizontal_tunnel(self, floor: Floor, x1: int, x2: int, y: int) -> None:
+        # Создает горизонтальный коридор от x1 до x2 на высоте y
         if not (0 <= y < floor.height):
             return
         for x in range(min(x1, x2), max(x1, x2) + 1):
@@ -192,6 +228,7 @@ class MapGenerator:
             self._add_tunnel_walls(floor, x, y)
 
     def _create_vertical_tunnel(self, floor: Floor, y1: int, y2: int, x: int) -> None:
+        # Создает вертикальный коридор от y1 до y2 на позиции x
         if not (0 <= x < floor.width):
             return
         for y in range(min(y1, y2), max(y1, y2) + 1):
@@ -200,6 +237,7 @@ class MapGenerator:
             self._add_tunnel_walls(floor, x, y)
 
     def _add_tunnel_walls(self, floor: Floor, x: int, y: int) -> None:
+        # Добавляет стены вокруг коридора, чтобы коридор был окружен стенами
         for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
             tx, ty = x + dx, y + dy
             if (floor.is_valid_position(tx, ty) and
@@ -207,6 +245,10 @@ class MapGenerator:
                 floor.tiles[tx][ty].tile_type = Tile.WALL
 
     def _ensure_connectivity(self, floor: Floor) -> None:
+        # Проверяет и обеспечивает, чтобы все комнаты на этаже были соединены:
+        # 1. Находит все уже соединенные комнаты
+        # 2. Для каждой несоединенной комнаты находит ближайшую соединенную
+        # 3. Создает коридор между ними
         if not floor.rooms:
             return
 
@@ -218,6 +260,8 @@ class MapGenerator:
                 connected.update(self._find_connected_rooms(floor, i))
 
     def _find_connected_rooms(self, floor: Floor, start_idx: int) -> Set[int]:
+        # Находит все комнаты, соединенные с комнатой start_idx:
+        # Использует поиск в глубину по графу комнат и коридоров
         if not floor.rooms:
             return set()
 
@@ -240,11 +284,16 @@ class MapGenerator:
         return visited
 
     def _calculate_distance(self, room1: Room, room2: Room) -> float:
+        # Вычисляет евклидово расстояние между центрами двух комнат
         x1, y1 = room1.center
         x2, y2 = room2.center
         return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
     def _add_stairs(self, floor_num: int, next_floor_num: int) -> None:
+        # Добавляет лестницы между этажами:
+        # 1. Случайно выбирает комнаты на обоих этажах
+        # 2. Размещает лестницу вверх в центре комнаты на нижнем этаже
+        # 3. Размещает лестницу вниз в центре комнаты на верхнем этаже
         current_floor = self.floors[floor_num]
         next_floor = self.floors[next_floor_num]
 
@@ -263,6 +312,9 @@ class MapGenerator:
         next_floor.stairs_down.append((x_down, y_down))
 
     def print_map(self, floor_num: int, player=None) -> None:
+        # Отображает карту этажа в консоли:
+        # - Показывает только исследованные плитки
+        # - Если передан игрок, отображает его символом @
         if floor_num < 0 or floor_num >= len(self.floors):
             print(f"Этаж {floor_num} не существует!")
             return

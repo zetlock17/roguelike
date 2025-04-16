@@ -1,4 +1,5 @@
 import random
+import json
 from typing import List, Tuple, Optional
 from colorama import Fore, Back, Style
 from statistic import Statistics
@@ -57,12 +58,12 @@ class Player(Character):
     """Класс игрового персонажа."""
     
     def __init__(self, x: int, y: int, name: str = "Заключенный"):
-        super().__init__(x, y,Style.BRIGHT + "\033[32;47m✧\033[0m" + Style.RESET_ALL, name, hp=100, defense=1, power=5)
+        super().__init__(x, y, Fore.BLUE + Back.BLACK + '♦' + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
         self.equipped_weapon = Fists()
-
         self.inventory.weapon_slot.item = self.equipped_weapon
         self.statistics = Statistics()
+        self.keys_found = 0  # Track the number of keys found
 
     def take_damage(self, amount: int) -> None:
         """Применяет урон к игроку и записывает его в статистику."""
@@ -115,6 +116,18 @@ class Player(Character):
         self.inventory.remove_item(food)
         self.statistics.record_food_eaten()
         return health_recovered
+    
+    def interact_with_character(self, game_map, enemies) -> Optional[Tuple[str, Optional['Character']]]:
+        """Взаимодействует с персонажем рядом с игроком."""
+        for enemy in enemies:
+            if enemy.current_floor == self.current_floor and self.distance_to(enemy) <= 1.5:
+                if hasattr(enemy, 'interact'):
+                    return enemy.interact(self)
+        return None
+
+    def has_all_keys(self) -> bool:
+        """Проверяет, собрал ли игрок все ключи."""
+        return self.keys_found >= 3
 
 
 class Enemy(Character):
@@ -285,11 +298,12 @@ class Guard(Police):
 class Shooter(Police):
     """Класс стрелка - полицейский с пистолетом."""
     
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int, has_key: bool = False):
         super().__init__(x, y, Fore.RED + Style.BRIGHT + "\033[91;47m➹\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, "Стрелок", hp=25, defense=1, power=1)
         self.weapon = Gun()
         self.shoot_range = 5
         self.shoot_cooldown = 0
+        self.has_key = has_key
     
     def take_turn(self, player, game_map) -> Optional[str]:
         """Стрелок может атаковать на расстоянии."""
@@ -337,6 +351,12 @@ class Shooter(Police):
                 dy = random.choice([-1, 0, 1])
                 self.move(dx, dy, game_map)
         return message
+    
+    def on_death(self) -> Optional['Item']:
+        """При смерти может выпасть ключ."""
+        if self.has_key:
+            return Key(2)
+        return None
 
 
 class Downcast(NeutralEnemy):
@@ -358,18 +378,21 @@ class Authority(NeutralEnemy):
     """Класс авторитета - сильного заключенного."""
     
     def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.MAGENTA + Style.BRIGHT + "\033[95;47m⛛\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, "Авторитет", hp=40, defense=3, power=6)
+        super().__init__(x, y, Fore.MAGENTA + Back.BLACK + '₳' + Fore.RESET + Back.RESET, "Авторитет", hp=40, defense=3, power=6)
         self.weapon = Shiv()
         self.has_good_item = random.random() < 0.5
+        self.has_given_riddle = False
+        self.has_given_key = False
+        self.riddle_failed = False
     
     def take_turn(self, player, game_map) -> Optional[str]:
         """Авторитет опаснее когда разозлен."""
         message = super().take_turn(player, game_map)
         
-        if self.aggravated and self.distance_to(player) <= 1.5:
+        if (self.aggravated or self.riddle_failed) and self.distance_to(player) <= 1.5:
             damage = self.power + self.weapon.damage
             player.take_damage(damage)
-            message =Fore.RED + f"{self.name} атакует вас заточкой, нанося {damage} урона!" + Fore.RESET
+            message = f"{self.name} атакует вас заточкой, нанося {damage} урона!"
         return message
     
     def on_death(self) -> Optional['Item']:
@@ -378,6 +401,54 @@ class Authority(NeutralEnemy):
             items = [Shiv(), CondensedMilk()]
             return random.choice(items)
         return None
+    
+    def interact(self, player) -> Tuple[str, Optional['Authority']]:
+        """Взаимодействие с авторитетом."""
+        if self.aggravated or self.riddle_failed:
+            return f"{self.name} агрессивно настроен и не хочет с вами разговаривать!", self
+        
+        if self.has_given_key:
+            return f"{self.name} говорит: 'У меня для тебя больше ничего нет, братан.'", self
+        
+        if not self.has_given_riddle:
+            self.has_given_riddle = True
+            return self.ask_riddle(player), self
+        
+        return f"{self.name} смотрит на вас, ожидая ответа на свою загадку.", self
+    
+    def ask_riddle(self, player) -> str:
+        """Задает тюремную загадку."""
+        try:
+            with open('d:\\roguelike-1\\questions.json', 'r', encoding='utf-8') as f:
+                riddles_data = json.load(f)
+                
+            riddles = riddles_data.get('тюремные_загадки', [])
+            if not riddles:
+                return f"{self.name} говорит: 'Хотел загадать тебе загадку, но что-то голова не варит...'"
+            
+            self.current_riddle = random.choice(riddles)
+            return f"{self.name} говорит: '{self.current_riddle['вопрос']}'"
+        except Exception as e:
+            return f"{self.name} говорит: 'Хотел загадать тебе загадку, но не смог: {str(e)}'"
+    
+    def answer_riddle(self, answer_index: int, player) -> Tuple[bool, str]:
+        """Проверяет ответ на загадку."""
+        if not hasattr(self, 'current_riddle'):
+            return False, f"{self.name} говорит: 'Я еще не задал тебе вопрос!'"
+        
+        correct_answer = self.current_riddle['правильный_ответ']
+        
+        if answer_index == correct_answer:
+            self.has_given_key = True
+            key = Key(1)
+            player.inventory.add_item(key)
+            player.keys_found += 1
+            player.statistics.record_key_found()
+            return True, f"{self.name} говорит: 'Правильно, браток! Вот тебе ключ от свободы.'"
+        else:
+            self.riddle_failed = True
+            self.aggravated = True
+            return False, f"{self.name} в ярости кричит: 'Неправильно! Ты нарушил воровской закон!'"
 
 
 class Item:
@@ -390,6 +461,20 @@ class Item:
     
     def use(self, user) -> bool:
         """Использует предмет. Возвращает True, если предмет должен быть удален."""
+        return False
+
+
+class Key(Item):
+    """Класс ключа для побега."""
+    
+    def __init__(self, key_number: int = 1):
+        super().__init__(f"Ключ #{key_number}", 
+                        Back.BLACK + Fore.YELLOW + "♔" + Fore.RESET + Back.RESET, 
+                        color='yellow')
+        self.key_number = key_number
+    
+    def use(self, user: Player) -> bool:
+        """Ключи нельзя использовать напрямую."""
         return False
 
 
@@ -532,7 +617,7 @@ class KeySlot(Slot):
     
     def can_contain(self, item: Item) -> bool:
         """Проверяет, может ли слот содержать данный ключ."""
-        return False
+        return isinstance(item, Key)
 
 
 class FoodSlot(Slot):
