@@ -479,7 +479,7 @@ class CondensedMilk(Food):
     """Класс сгущенки - лучшая еда."""
     
     def __init__(self):
-        super().__init__("Сгущенка",Back.LIGHTBLACK_EX + Style.BRIGHT +Fore.LIGHTWHITE_EX+'◎'+Fore.RESET + Back.RESET + Style.RESET_ALLs, nutrition=20, color='white')
+        super().__init__("Сгущенка",Back.LIGHTBLACK_EX + Style.BRIGHT +Fore.LIGHTWHITE_EX+'◎'+Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=20, color='white')
 
 
 class Slot:
