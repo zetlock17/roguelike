@@ -58,12 +58,13 @@ class Player(Character):
     """Класс игрового персонажа."""
     
     def __init__(self, x: int, y: int, name: str = "Заключенный"):
-        super().__init__(x, y,Style.BRIGHT + "\033[32;47m✧\033[0m" + Fore.RESET+ Back.RESET, name, hp=100, defense=1, power=5)
+        super().__init__(x, y, Style.BRIGHT + "\033[32;47m✧\033[0m" + Fore.RESET+ Back.RESET, 
+                         name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
-        self.equipped_weapon = Fists()
+        self.equipped_weapon = Weapon("Кулаки", '*', damage=0, color='white')
         self.inventory.weapon_slot.item = self.equipped_weapon
         self.statistics = Statistics()
-        self.keys_found = 0  # Track the number of keys found
+        self.keys_found = 0
 
     def take_damage(self, amount: int) -> None:
         """Применяет урон к игроку и записывает его в статистику."""
@@ -133,21 +134,30 @@ class Player(Character):
 class Enemy(Character):
     """Базовый класс для всех врагов."""
     
-    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int):
+    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int, xp_reward: int = None):
         super().__init__(x, y, char, name, hp, defense, power)
-        self.xp_reward = hp
+        self.xp_reward = xp_reward if xp_reward is not None else hp
+        self.weapon = None
     
     def take_turn(self, player, game_map) -> Optional[str]:
         """Выполняет ход врага. Возвращает строку сообщения, если произошло действие (например, атака)."""
         pass
+    
+    def on_death(self) -> Optional['Item']:
+        """При смерти может выпасть предмет."""
+        return None
 
 
 class HostileEnemy(Enemy):
     """Класс враждебного противника, атакующего игрока."""
     
-    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int, view_range: int = 6):
-        super().__init__(x, y, char, name, hp, defense, power)
+    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int, 
+                 view_range: int = 6, weapon: 'Weapon' = None, has_key: bool = False):
+        super().__init__(x, y, char, name, hp, defense, power, weapon)
         self.view_range = view_range
+        self.weapon = weapon
+        self.has_key = has_key
+        
     
     def take_turn(self, player, game_map) -> Optional[str]:
         """Выполняет ход враждебного противника."""
@@ -157,8 +167,11 @@ class HostileEnemy(Enemy):
             
             if distance <= 1.5:
                 damage = self.power
+                if self.weapon:
+                    damage += self.weapon.damage
                 player.take_damage(damage)
-                message = Fore.RED + f"{self.name} атакует вас, нанося {damage} урона!" + Fore.RESET
+                weapon_name = f" с помощью {self.weapon.name}" if self.weapon else ""
+                message = Fore.RED + f"{self.name} атакует вас{weapon_name}, нанося {damage} урона!" + Fore.RESET
             else:
                 dx = 0
                 dy = 0
@@ -186,14 +199,28 @@ class HostileEnemy(Enemy):
                 dy = random.choice([-1, 0, 1])
                 self.move(dx, dy, game_map)
         return message
+    
+    def on_death(self) -> Optional['Item']:
+        """При смерти может выпасть ключ."""
+        if self.has_key:
+            return Key(2)
+        return None
 
 
 class NeutralEnemy(Enemy):
     """Класс нейтрального персонажа, который не атакует первым."""
     
-    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int):
+    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int, 
+                 weapon: 'Weapon' = None, has_item: bool = False, has_riddle: bool = False):
         super().__init__(x, y, char, name, hp, defense, power)
         self.aggravated = False
+        self.weapon = weapon
+        self.has_item = has_item
+        self.has_riddle = has_riddle
+        self.has_given_riddle = False
+        self.has_given_key = False
+        self.riddle_failed = False
+        self.current_riddle = None
     
     def take_turn(self, player, game_map) -> Optional[str]:
         """Выполняет ход нейтрального противника."""
@@ -201,10 +228,11 @@ class NeutralEnemy(Enemy):
         if self.aggravated and self.distance_to(player) <= 8:
             if self.distance_to(player) <= 1.5:
                 damage = self.power
-                if hasattr(self, 'weapon') and self.weapon:
+                if self.weapon:
                     damage += self.weapon.damage
                 player.take_damage(damage)
-                message = Fore.RED + f"{self.name} атакует вас, нанося {damage} урона!" + Fore.RESET
+                weapon_name = f" {self.weapon.name}" if self.weapon else ""
+                message = Fore.RED + f"{self.name} атакует вас{weapon_name}, нанося {damage} урона!" + Fore.RESET
             else:
                 dx = 0
                 dy = 0
@@ -236,181 +264,32 @@ class NeutralEnemy(Enemy):
         super().take_damage(amount)
         if not aggravated_before and not self.is_dead():
             self.aggravated = True
-
-
-class Dog(HostileEnemy):
-    """Класс враждебной собаки."""
-    
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y,Style.BRIGHT + "\033[91;47m✺\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, "Злая собака", hp=20, defense=0, power=3, view_range=8)
-
-
-class Police(HostileEnemy):
-    """Базовый класс для полицейских."""
-    
-    def __init__(self, x: int, y: int, char: str, name: str, hp: int, defense: int, power: int):
-        super().__init__(x, y, char, name, hp, defense, power)
-
-
-class Guard(Police):
-    """Класс охранника - полицейский с дубинкой."""
-    
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y, Fore.LIGHTRED_EX + Style.BRIGHT +"\033[91;47m⚔︎\033[0m" + Fore.RESET + Style.RESET_ALL, "Охранник", hp=30, defense=2, power=5)
-        self.weapon = Baton()
-    
-    def take_turn(self, player, game_map) -> Optional[str]:
-        """Охранник агрессивнее и наносит больше урона благодаря дубинке."""
-        message = None
-        if self.distance_to(player) <= 8:
-            if self.distance_to(player) <= 1.5:
-                damage = self.power + self.weapon.damage
-                player.take_damage(damage)
-                message = Fore.RED +f"{self.name} бьет вас дубинкой, нанося {damage} урона!" + Fore.RESET
-            else:
-                dx = 0
-                dy = 0
-                
-                if self.x < player.x:
-                    dx = 1
-                elif self.x > player.x:
-                    dx = -1
-                    
-                if self.y < player.y:
-                    dy = 1
-                elif self.y > player.y:
-                    dy = -1
-                
-                if dx != 0 and dy != 0 and self.move(dx, dy, game_map):
-                    return message
-                if dx != 0 and self.move(dx, 0, game_map):
-                    return message
-                if dy != 0 and self.move(0, dy, game_map):
-                    return message
-        else:
-            if random.random() < 0.7:
-                dx = random.choice([-1, 0, 1])
-                dy = random.choice([-1, 0, 1])
-                self.move(dx, dy, game_map)
-        return message
-
-
-class Shooter(Police):
-    """Класс стрелка - полицейский с пистолетом."""
-    
-    def __init__(self, x: int, y: int, has_key: bool = False):
-        super().__init__(x, y, Fore.RED + Style.BRIGHT + "\033[91;47m➹\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, "Стрелок", hp=25, defense=1, power=1)
-        self.weapon = Gun()
-        self.shoot_range = 5
-        self.shoot_cooldown = 0
-        self.has_key = has_key
-    
-    def take_turn(self, player, game_map) -> Optional[str]:
-        """Стрелок может атаковать на расстоянии."""
-        message = None
-        distance = self.distance_to(player)
-
-        if self.shoot_cooldown > 0:               #добавил кулдаун + щанс промаха
-            self.shoot_cooldown -= 1
-            return message
-        
-        if distance <= self.shoot_range:
-            self.shoot_cooldown = 2
-            if random.random() < 0.7:  # 70% шанс попадания
-                damage = self.power + self.weapon.damage
-                player.take_damage(damage)
-                message = Fore.RED + f"{self.name} стреляет в вас, нанося {damage} урона!" + Fore.RESET
-            else:
-                message = Fore.YELLOW + f"{self.name} выстрелил, но промахнулся!" + Fore.RESET
-        elif distance <= 8:
-            dx = 0
-            dy = 0
-            
-            if self.x < player.x:
-                dx = -1
-            elif self.x > player.x:
-                dx = 1
-                
-            if self.y < player.y:
-                dy = -1
-            elif self.y > player.y:
-                dy = 1
-
-            if dx != 0 and self.move(dx, 0, game_map):
-                return message
-            if dy != 0 and self.move(0, dy, game_map):
-                return message
-            
-            if self.distance_to(player) <= self.shoot_range:
-                damage = self.power + self.weapon.damage
-                player.take_damage(damage)
-                message = Fore.RED + f"{self.name} стреляет в вас, нанося {damage} урона!" + Fore.RESET
-        else:
-            if random.random() < 0.5:
-                dx = random.choice([-1, 0, 1])
-                dy = random.choice([-1, 0, 1])
-                self.move(dx, dy, game_map)
-        return message
-    
-    def on_death(self) -> Optional['Item']:
-        """При смерти может выпасть ключ."""
-        if self.has_key:
-            return Key(2)
-        return None
-
-
-class Downcast(NeutralEnemy):
-    """Класс опущенного заключенного."""
-    
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y,Style.BRIGHT + "\033[33;47m☻\033[0m" + Fore.RESET + Back.BLACK + Style.RESET_ALL, "Опущенный", hp=15, defense=0, power=2)
-        self.has_item = random.random() < 0.3
     
     def on_death(self) -> Optional['Item']:
         """При смерти может выпасть предмет."""
         if self.has_item:
-            items = [StaleBread(), Cockroach()]
-            return random.choice(items)
-        return None
-
-
-class Authority(NeutralEnemy):
-    """Класс авторитета - сильного заключенного."""
-    
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y,Fore.MAGENTA + Style.BRIGHT + "\033[95;47m⛛\033[0m" + Fore.RESET + Back.RESET, "Авторитет", hp=40, defense=3, power=6)
-        self.weapon = Shiv()
-        self.has_good_item = random.random() < 0.5
-        self.has_given_riddle = False
-        self.has_given_key = False
-        self.riddle_failed = False
-    
-    def take_turn(self, player, game_map) -> Optional[str]:
-        """Авторитет опаснее когда разозлен."""
-        message = super().take_turn(player, game_map)
-        
-        if (self.aggravated or self.riddle_failed) and self.distance_to(player) <= 1.5:
-            damage = self.power + self.weapon.damage
-            player.take_damage(damage)
-            message = f"{self.name} атакует вас заточкой, нанося {damage} урона!"
-        return message
-    
-    def on_death(self) -> Optional['Item']:
-        """При смерти может выпасть хороший предмет."""
-        if self.has_good_item:
-            items = [Shiv(), CondensedMilk()]
+            items = [
+                Food("Таракан", Style.BRIGHT + "\033[47;38;5;130m∿\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                     nutrition=1, color='brown'),
+                Food("Засохший хлеб", Style.BRIGHT + "\033[47;38;5;130m⬬\033[0m"+ Back.RESET + Style.RESET_ALL, 
+                     nutrition=5, color='tan'),
+                Weapon("Заточка", Style.BRIGHT + "\033[30;47m↾\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
+                       damage=7, color='silver'),
+                Food("Сгущенка", Style.BRIGHT + Fore.LIGHTWHITE_EX + '◎' + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                     nutrition=20, color='white')
+            ]
             return random.choice(items)
         return None
     
-    def interact(self, player) -> Tuple[str, Optional['Authority']]:
-        """Взаимодействие с авторитетом."""
+    def interact(self, player) -> Tuple[str, Optional['NeutralEnemy']]:
+        """Взаимодействие с нейтральным персонажем."""
         if self.aggravated or self.riddle_failed:
             return f"{self.name} агрессивно настроен и не хочет с вами разговаривать!", self
         
         if self.has_given_key:
             return f"{self.name} говорит: 'У меня для тебя больше ничего нет, братан.'", self
         
-        if not self.has_given_riddle:
+        if not self.has_given_riddle and self.has_riddle:
             self.has_given_riddle = True
             return self.ask_riddle(player), self
         
@@ -419,7 +298,7 @@ class Authority(NeutralEnemy):
     def ask_riddle(self, player) -> str:
         """Задает тюремную загадку."""
         try:
-            with open('d:\\roguelike-1\\questions.json', 'r', encoding='utf-8') as f:
+            with open('questions.json', 'r', encoding='utf-8') as f:
                 riddles_data = json.load(f)
                 
             riddles = riddles_data.get('тюремные_загадки', [])
@@ -493,38 +372,6 @@ class Weapon(Item):
         return True
 
 
-class Fists(Weapon):
-    """Класс кулаков - базовое оружие."""
-    
-    def __init__(self):
-        super().__init__("Кулаки", '*', damage=0, color='white')
-    
-    def use(self, user: Player) -> bool:
-        """Кулаки нельзя использовать как предмет."""
-        return False
-
-
-class Baton(Weapon):
-    """Класс полицейской дубинки."""
-    
-    def __init__(self):
-        super().__init__("Полицейская дубинка",Style.BRIGHT + "\033[47;38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, damage=5, color='blue')
-
-
-class Shiv(Weapon):
-    """Класс заточки."""
-    
-    def __init__(self):
-        super().__init__("Заточка",Style.BRIGHT + "\033[30;47m↾\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, damage=7, color='silver') 
-
-
-class Gun(Weapon):
-    """Класс пистолета."""
-    
-    def __init__(self):
-        super().__init__("Пистолет",Style.BRIGHT + "\033[47;30m⌐\033[0m" + Fore.RESET+ Back.RESET + Style.RESET_ALL, damage=10, color='darkgrey')
-
-
 class Food(Item):
     """Класс еды."""
     
@@ -537,34 +384,6 @@ class Food(Item):
         health_recovered = user.eat_food(self)
         print(Fore.GREEN + f"Вы съели {self.name} и восстановили {health_recovered} здоровья." + Fore.RESET)
         return True
-
-
-class Cockroach(Food):
-    """Класс таракана - минимальная еда."""
-    
-    def __init__(self):
-        super().__init__("Таракан",Style.BRIGHT + "\033[47;38;5;130m∿\033[0m" + Fore.RESET +Back.RESET + Style.RESET_ALL, nutrition=1, color='brown')
-
-
-class StaleBread(Food):
-    """Класс засохшего хлеба - обычная еда."""
-    
-    def __init__(self):
-        super().__init__("Засохший хлеб",Style.BRIGHT +"\033[47;38;5;130m⬬\033[0m"+ Back.RESET + Style.RESET_ALL, nutrition=5, color='tan')
-
-
-class PrisonFood(Food):
-    """Класс тюремного хрючева - средняя еда."""
-    
-    def __init__(self):
-        super().__init__("Тюремное хрючево", Style.BRIGHT+ Fore.LIGHTWHITE_EX+ "\033[47;38;5;130m✱\033[0m"+ Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=10, color='yellow')
-
-
-class CondensedMilk(Food):
-    """Класс сгущенки - лучшая еда."""
-    
-    def __init__(self):
-        super().__init__("Сгущенка",Style.BRIGHT +Fore.LIGHTWHITE_EX+'◎'+Fore.RESET + Back.RESET + Style.RESET_ALL, nutrition=20, color='white')
 
 
 class Slot:

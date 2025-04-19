@@ -6,9 +6,8 @@ import json
 from colorama import Fore, Back, Style
 
 from entities import (
-    Player, Dog, Guard, Shooter, Downcast, Authority,
-    Fists, Baton, Shiv, Gun, Cockroach, StaleBread, PrisonFood, CondensedMilk,
-    Item, Weapon, Key
+    Player, Enemy, HostileEnemy, NeutralEnemy,
+    Item, Weapon, Food, Key
 )
 
 from statistic import Statistics
@@ -16,7 +15,7 @@ from map_generator import MapGenerator
 from introductory_screen import show_title_screen, transition_to_game
 from input_handler import get_char
 
-def display_game_over(player: Player): # ф-ия отображения статистики
+def display_game_over(player: Player):
     os.system('cls' if os.name == 'nt' else 'clear')
     print("\n" + player.statistics.display())
                                                                                                           
@@ -75,7 +74,7 @@ def display_dialog(title, message, options=None):
                 if key == '\x1b':  # Escape key
                     return -1
                 
-def display_victory_screen(player: Player): # ф-ия отображения статистики
+def display_victory_screen(player: Player):
     os.system('cls' if os.name == 'nt' else 'clear')
     print("\n" + player.statistics.win_display())
                                                                                                           
@@ -95,9 +94,10 @@ if __name__ == "__main__":
     player = Player(start_x, start_y, "Заключенный Жужун")
 
     enemies = []
-    
+    items = []
     key_holder_added = False
     
+    # Создание врагов
     for floor_idx, floor in enumerate(dungeon):
         for room in floor.rooms[1:]:
             if random.random() < 0.7:
@@ -111,65 +111,94 @@ if __name__ == "__main__":
                 
                 if floor_idx == 0:
                     if enemy_type < 0.4:
-                        enemy = Dog(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Style.BRIGHT + "\033[91;47m✺\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
+                                           "Злая собака", hp=20, defense=0, power=3, view_range=8)
                     elif enemy_type < 0.7:
-                        enemy = Downcast(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = NeutralEnemy(x, y, 
+                                           Style.BRIGHT + "\033[33;47m☻\033[0m" + Fore.RESET + Back.BLACK + Style.RESET_ALL, 
+                                           "Опущенный", hp=15, defense=0, power=2, has_item=True)
                     else:
-                        enemy = Guard(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Fore.LIGHTRED_EX + Style.BRIGHT + "\033[91;47m⚔︎\033[0m" + Fore.RESET + Style.RESET_ALL, 
+                                           "Охранник", hp=30, defense=2, power=5, 
+                                           weapon=Weapon("Полицейская дубинка", 
+                                                       Style.BRIGHT + "\033[47;38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, 
+                                                       damage=5, color='blue'))
                 elif floor_idx == 1:
                     if enemy_type < 0.3:
-                        enemy = Guard(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Fore.LIGHTRED_EX + Style.BRIGHT + "\033[91;47m⚔︎\033[0m" + Fore.RESET + Style.RESET_ALL, 
+                                           "Охранник", hp=30, defense=2, power=5, 
+                                           weapon=Weapon("Полицейская дубинка", 
+                                                       Style.BRIGHT + "\033[47;38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, 
+                                                       damage=5, color='blue'))
                     elif enemy_type < 0.6:
-                        enemy = Downcast(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = NeutralEnemy(x, y, 
+                                           Style.BRIGHT + "\033[33;47m☻\033[0m" + Fore.RESET + Back.BLACK + Style.RESET_ALL, 
+                                           "Опущенный", hp=15, defense=0, power=2, has_item=True)
                     elif enemy_type < 0.8:
-                        enemy = Dog(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Style.BRIGHT + "\033[91;47m✺\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
+                                           "Злая собака", hp=20, defense=0, power=3, view_range=8)
                     else:
-                        enemy = Shooter(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Fore.RED + Style.BRIGHT + "\033[91;47m➹\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                           "Стрелок", hp=25, defense=1, power=1, 
+                                           weapon=Weapon("Пистолет", 
+                                                       Style.BRIGHT + "\033[47;30m⌐\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                                       damage=10, color='darkgrey'))
                 else:
                     if enemy_type < 0.3:
-                        enemy = Dog(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Style.BRIGHT + "\033[91;47m✺\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
+                                           "Злая собака", hp=20, defense=0, power=3, view_range=8)
                     elif enemy_type < 0.6:
-                        enemy = Shooter(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
+                        enemy = HostileEnemy(x, y, 
+                                           Fore.RED + Style.BRIGHT + "\033[91;47m➹\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                           "Стрелок", hp=25, defense=1, power=1, 
+                                           weapon=Weapon("Пистолет", 
+                                                       Style.BRIGHT + "\033[47;30m⌐\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                                       damage=10, color='darkgrey'))
                     else:
-                        enemy = Guard(x, y)
-                        enemy.current_floor = floor_idx
-                        enemies.append(enemy)
-                    enemy = Authority(x, y)
-                    enemy.current_floor = floor_idx
-                    enemies.append(enemy)
-        
-        # Add a key-holding enemy on the last floor (guaranteed)
+                        enemy = HostileEnemy(x, y, 
+                                           Fore.LIGHTRED_EX + Style.BRIGHT + "\033[91;47m⚔︎\033[0m" + Fore.RESET + Style.RESET_ALL, 
+                                           "Охранник", hp=30, defense=2, power=5, 
+                                           weapon=Weapon("Полицейская дубинка", 
+                                                       Style.BRIGHT + "\033[47;38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, 
+                                                       damage=5, color='blue'))
+                    
+                    # Добавляем авторитета на последний этаж
+                    enemy = NeutralEnemy(x, y, 
+                                       Fore.MAGENTA + Style.BRIGHT + "\033[95;47m⛛\033[0m" + Fore.RESET + Back.RESET, 
+                                       "Авторитет", hp=40, defense=3, power=6, 
+                                       weapon=Weapon("Заточка", 
+                                                   Style.BRIGHT + "\033[30;47m↾\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
+                                                   damage=7, color='silver'), 
+                                       has_item=True, has_riddle=True)
+                
+                enemy.current_floor = floor_idx
+                enemies.append(enemy)
+
+        # Добавляем ключ-носителя на последний этаж (гарантированно)
         if floor_idx == len(dungeon) - 1 and not key_holder_added:
             room = random.choice(floor.rooms)
             x = random.randint(room.x1 + 1, room.x2 - 1)
             y = random.randint(room.y1 + 1, room.y2 - 1)
             
             if 0 <= x < floor.width and 0 <= y < floor.height:
-                key_holder = Shooter(x, y, has_key=True)
+                key_holder = HostileEnemy(x, y, 
+                                       Fore.RED + Style.BRIGHT + "\033[91;47m➹\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                       "Стрелок", hp=25, defense=1, power=1, 
+                                       weapon=Weapon("Пистолет", 
+                                                   Style.BRIGHT + "\033[47;30m⌐\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                                   damage=10, color='darkgrey'),
+                                       has_key=True)
                 key_holder.current_floor = floor_idx
                 enemies.append(key_holder)
                 key_holder_added = True
 
-    items = []
-
+    # Создание предметов
     for floor_idx, floor in enumerate(dungeon):
         for room in floor.rooms:
             if random.random() < 0.5:
@@ -182,19 +211,31 @@ if __name__ == "__main__":
                 item_type = random.random()
                 
                 if item_type < 0.3:
-                    items.append((Cockroach(), x, y, floor_idx))
+                    items.append((Food("Таракан", 
+                                     Style.BRIGHT + "\033[47;38;5;130m∿\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                     nutrition=1, color='brown'), x, y, floor_idx))
                 elif item_type < 0.6:
-                    items.append((StaleBread(), x, y, floor_idx))
+                    items.append((Food("Засохший хлеб", 
+                                     Style.BRIGHT + "\033[47;38;5;130m⬬\033[0m"+ Back.RESET + Style.RESET_ALL, 
+                                     nutrition=5, color='tan'), x, y, floor_idx))
                 elif item_type < 0.8:
-                    items.append((PrisonFood(), x, y, floor_idx))
+                    items.append((Food("Тюремное хрючево", 
+                                     Style.BRIGHT + Fore.LIGHTWHITE_EX + "\033[47;38;5;130m✱\033[0m"+ Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                     nutrition=10, color='yellow'), x, y, floor_idx))
                 elif item_type < 0.9:
-                    items.append((Shiv(), x, y, floor_idx))
+                    items.append((Weapon("Заточка", 
+                                       Style.BRIGHT + "\033[30;47m↾\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
+                                       damage=7, color='silver'), x, y, floor_idx))
                 elif item_type < 0.95:
-                    items.append((Baton(), x, y, floor_idx))
+                    items.append((Weapon("Полицейская дубинка", 
+                                       Style.BRIGHT + "\033[47;38;5;130m┤\033[0m" + Back.RESET + Style.RESET_ALL, 
+                                       damage=5, color='blue'), x, y, floor_idx))
                 else:
-                    items.append((Gun(), x, y, floor_idx))
+                    items.append((Weapon("Пистолет", 
+                                       Style.BRIGHT + "\033[47;30m⌐\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                                       damage=10, color='darkgrey'), x, y, floor_idx))
     
-    # Add a random key on one of the floors
+    # Добавляем случайный ключ на одном из этажей
     random_key_floor = random.randint(0, len(dungeon) - 1)
     room = random.choice(dungeon[random_key_floor].rooms)
     key_x = random.randint(room.x1 + 1, room.x2 - 1)
@@ -208,8 +249,6 @@ if __name__ == "__main__":
     
     dungeon[player.current_floor].update_fov(player.x, player.y)
 
-
-    
     while running:
         os.system('cls' if os.name == 'nt' else 'clear')
                                                                                                             
@@ -335,7 +374,7 @@ if __name__ == "__main__":
             if interaction_result:
                 interaction_message, interacted_character = interaction_result
                 
-                if isinstance(interacted_character, Authority) and hasattr(interacted_character, 'current_riddle'):
+                if isinstance(interacted_character, NeutralEnemy) and hasattr(interacted_character, 'current_riddle'):
                     riddle = interacted_character.current_riddle
                     options = riddle.get('варианты', [])
                     
@@ -411,4 +450,4 @@ if __name__ == "__main__":
                 os.system('cls' if os.name == 'nt' else 'clear')
                 display_game_over(player)
                 get_char()
-                running = False
+                running = False 
