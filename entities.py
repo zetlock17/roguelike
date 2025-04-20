@@ -62,7 +62,7 @@ class Player(Character):
                          name, hp=100, defense=1, power=5)
         self.inventory = Inventory()
         self.equipped_weapon = Weapon("Кулаки", '*', damage=0, color='white')
-        self.inventory.weapon_slot.item = self.equipped_weapon
+        self.inventory.weapon = self.equipped_weapon  # Просто сохраняем оружие напрямую
         self.statistics = Statistics()
         self.keys_found = 0
 
@@ -417,59 +417,29 @@ class Slot:
         return item
 
 
-class WeaponSlot(Slot):
-    """Слот для оружия."""
-    
-    def __init__(self):
-        super().__init__("Оружие")
-    
-    def can_contain(self, item: Item) -> bool:
-        """Проверяет, может ли слот содержать данное оружие."""
-        return isinstance(item, Weapon)
-
-
-class KeySlot(Slot):
-    """Слот для ключей."""
-    
-    def __init__(self):
-        super().__init__("Ключ")
-    
-    def can_contain(self, item: Item) -> bool:
-        """Проверяет, может ли слот содержать данный ключ."""
-        return isinstance(item, Key)
-
-
-class FoodSlot(Slot):
-    """Слот для еды."""
-    
-    def __init__(self):
-        super().__init__("Еда")
-    
-    def can_contain(self, item: Item) -> bool:
-        """Проверяет, может ли слот содержать данную еду."""
-        return isinstance(item, Food)
-
-
 class Inventory:
-    """Класс инвентаря."""
+    """Упрощенный класс инвентаря без отдельных классов слотов."""
     
     def __init__(self):
-        self.weapon_slot = WeaponSlot()
-        self.key_slots = [KeySlot() for _ in range(3)]
-        self.food_slots = [FoodSlot() for _ in range(5)]
-        self.general_items = []
+        self.weapon = None  # Слот для оружия (макс 1)
+        self.keys = []      # Список ключей (макс 3)
+        self.food = []      # Список еды (макс 5)
+        self.general_items = []  # Остальные предметы
     
     def add_item(self, item: Item) -> bool:
-        """Добавляет предмет в инвентарь."""
+        """Добавляет предмет в соответствующий раздел инвентаря."""
         if isinstance(item, Weapon):
-            if self.weapon_slot.is_empty():
-                self.weapon_slot.put(item)
+            if self.weapon is None:
+                self.weapon = item
+                return True
+        elif isinstance(item, Key):
+            if len(self.keys) < 3:
+                self.keys.append(item)
                 return True
         elif isinstance(item, Food):
-            for slot in self.food_slots:
-                if slot.is_empty():
-                    slot.put(item)
-                    return True
+            if len(self.food) < 5:
+                self.food.append(item)
+                return True
         
         self.general_items.append(item)
         return True
@@ -477,35 +447,25 @@ class Inventory:
     def get_all_items(self) -> List[Item]:
         """Возвращает список всех предметов в инвентаре."""
         items = []
-        
-        if not self.weapon_slot.is_empty():
-            items.append(self.weapon_slot.item)
-            
-        for slot in self.key_slots:
-            if not slot.is_empty():
-                items.append(slot.item)
-                
-        for slot in self.food_slots:
-            if not slot.is_empty():
-                items.append(slot.item)
-                
+        if self.weapon:
+            items.append(self.weapon)
+        items.extend(self.keys)
+        items.extend(self.food)
         items.extend(self.general_items)
         return items
         
     def remove_item(self, item: Item) -> bool:
-        """Удаляет предмет из инвентаря независимо от типа слота."""
-        if isinstance(item, Food):
-            for slot in self.food_slots:
-                if not slot.is_empty() and slot.item == item:
-                    slot.take()
-                    return True
-        
-        if not self.weapon_slot.is_empty() and self.weapon_slot.item == item and item.name != "Кулаки":
-            self.weapon_slot.take()
+        """Удаляет предмет из соответствующего раздела инвентаря."""
+        if isinstance(item, Weapon) and self.weapon == item:
+            self.weapon = None
             return True
-        
-        if item in self.general_items:
+        elif isinstance(item, Key) and item in self.keys:
+            self.keys.remove(item)
+            return True
+        elif isinstance(item, Food) and item in self.food:
+            self.food.remove(item)
+            return True
+        elif item in self.general_items:
             self.general_items.remove(item)
             return True
-        
         return False
