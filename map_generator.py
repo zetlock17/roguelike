@@ -1,6 +1,12 @@
 import random
 from typing import List, Tuple, Set
 from colorama import Fore, Back, Style
+from entities import Item, Key
+
+
+"""map_generator.py - Генерация карты
+Tile, Room, Floor - классы для представления элементов карты"""
+
 
 class Tile:
     EMPTY = 0
@@ -328,3 +334,12 @@ class MapGenerator:
                 else:
                     row += str(tile) if tile.explored else " "
             print(row)
+    
+    def generate_random_key(self, dungeon: List[Floor]) -> Tuple[Item, int, int, int]:
+        random_key_floor = random.randint(0, len(dungeon) - 1)
+        room = random.choice(dungeon[random_key_floor].rooms)
+        key_x = random.randint(room.x1 + 1, room.x2 - 1)
+        key_y = random.randint(room.y1 + 1, room.y2 - 1)
+        if 0 <= key_x < dungeon[random_key_floor].width and 0 <= key_y < dungeon[random_key_floor].height:
+            return Key(3), key_x, key_y, random_key_floor
+        return None

@@ -1,6 +1,9 @@
 from colorama import Fore, Style, Back
 
 
+"""statistic.py - cтатистика игрока
+class Statistics - отслеживает достижения игрока (убийства, предметы и тд)"""
+
 class Statistics:
     """Класс для отслеживания статистики игрока."""
     

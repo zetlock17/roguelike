@@ -275,7 +275,7 @@ class NeutralEnemy(Enemy):
                      nutrition=5, color='tan'),
                 Weapon("Заточка", Style.BRIGHT + "\033[30;47m↾\033[0m" + Back.RESET + Fore.RESET + Style.RESET_ALL, 
                        damage=7, color='silver'),
-                Food("Сгущенка", Style.BRIGHT + Fore.LIGHTWHITE_EX + '◎' + Fore.RESET + Back.RESET + Style.RESET_ALL, 
+                Food("Сгущенка", Style.BRIGHT + "\033[47;38;5;130m◎\033[0m" + Fore.RESET + Back.RESET + Style.RESET_ALL, 
                      nutrition=20, color='white')
             ]
             return random.choice(items)

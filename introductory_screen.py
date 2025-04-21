@@ -2,9 +2,14 @@ import os
 import time
 import random
 from colorama import Fore, Back, Style, init
-
-
 from input_handler import get_char
+
+
+
+"""introductory_screen.py - вступительный экран игры
+show_title_screen() - отображает заставку 
+transition_to_game() - анимация перехода к игре"""
+
 
 
 ITALIC_ON = "\033[3m"

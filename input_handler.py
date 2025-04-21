@@ -1,6 +1,11 @@
 import os
 import msvcrt
 
+
+"""input_handler.py - обработка ввода с клавиатуры:
+get_char() - получает символ с клавиатуры"""
+
+
 # def get_char():
 #     return msvcrt.getch().decode('utf-8').lower()
 
