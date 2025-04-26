@@ -37,52 +37,32 @@ class Statistics:
     def record_key_found(self):
         self.keys_found += 1
     
-    def display(self):
+    def _generate_display(self, color=Fore.RED, padding="    "):
         return (
                                                                                                                
             "                                                                                        \n"
             "                                                                                        \n"
-            "     "+Fore.RED+"     ███████╗   █████╗  ██    ██╗ ███████╗      ████║   ██   ██╗ ███████╗ ██████╗               "+Fore.RESET+" \n"
-            "    "+Fore.RED+"     ██╔═════╝  ██╔══██╗ ███  ███║ ██╔════╝    ██    ██╗ ██   ██║ ██╔════╝ ██   ██╗            "+Fore.RESET+" \n"
-            "    "+Fore.RED+"     ██║   ██╚╗ ███████║ ██║██ ██║ █████╗      ██    ██║ ██   ██║ █████╗   ██  ██╗                "+Fore.RESET+" \n"
-            "    "+Fore.RED+"     ██║    ██║ ██╔══██║ ██║   ██║ ██╔══╝      ██    ██║ ╚██ ██╔╝ ██╔══╝   █████═╗           "+Fore.RESET+" \n"
-            "    "+Fore.RED+"     ╚███████╔╝ ██║  ██║ ██║   ██║ ███████╗    ╚██████╔╝  ╚██╔═╝  ███████╗ ██╔╗██║               "+Fore.RESET+" \n"
-            "    "+Fore.RED+"      ╚══════╝  ╚═╝  ╚═╝ ╚═╝   ╚═╝ ╚══════╝     ╚═════╝    ╚═╝    ╚══════╝ ╚═╝╚══╝            "+Fore.RESET+"       \n"
+            "     "+color+"     ███████╗   █████╗  ██    ██╗ ███████╗      ████║   ██   ██╗ ███████╗ ██████╗               "+Fore.RESET+" \n"
+            "    "+color+"     ██╔═════╝  ██╔══██╗ ███  ███║ ██╔════╝    ██    ██╗ ██   ██║ ██╔════╝ ██   ██╗            "+Fore.RESET+" \n"
+            "    "+color+"     ██║   ██╚╗ ███████║ ██║██ ██║ █████╗      ██    ██║ ██   ██║ █████╗   ██  ██╗                "+Fore.RESET+" \n"
+            "    "+color+"     ██║    ██║ ██╔══██║ ██║   ██║ ██╔══╝      ██    ██║ ╚██ ██╔╝ ██╔══╝   █████═╗           "+Fore.RESET+" \n"
+            "    "+color+"     ╚███████╔╝ ██║  ██║ ██║   ██║ ███████╗    ╚██████╔╝  ╚██╔═╝  ███████╗ ██╔╗██║               "+Fore.RESET+" \n"
+            "    "+color+"      ╚══════╝  ╚═╝  ╚═╝ ╚═╝   ╚═╝ ╚══════╝     ╚═════╝    ╚═╝    ╚══════╝ ╚═╝╚══╝            "+Fore.RESET+"       \n"
             "                                                                                        \n"
                                                                                                        
             " \n"
             " \n"
             " \n"
-            f"                    Убито врагов: {self.enemies_killed}                   Подобрано предметов: {self.items_picked}\n"
+            f"{padding}Убито врагов: {self.enemies_killed}                   Подобрано предметов: {self.items_picked}\n"
             " \n"
-            f"                    Съедено еды: {self.food_eaten}                    Посещено этажей: {len(self.floors_visited)}\n"
+            f"{padding}Съедено еды: {self.food_eaten}                    Посещено этажей: {len(self.floors_visited)}\n"
             " \n"
-            f"                    Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
+            f"{padding}Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
             " \n"
-
         )
     
+    def display(self):
+        return self._generate_display(Fore.RED, "                    ")
+    
     def win_display(self):
-        return (
-                                                                                                               
-            "                                                                                        \n"
-            "                                                                                        \n"
-            "     "+Fore.GREEN+"     ███████╗   █████╗  ██    ██╗ ███████╗      ████║   ██   ██╗ ███████╗ ██████╗               "+Fore.RESET+" \n"
-            "    "+Fore.GREEN+"     ██╔═════╝  ██╔══██╗ ███  ███║ ██╔════╝    ██    ██╗ ██   ██║ ██╔════╝ ██   ██╗            "+Fore.RESET+" \n"
-            "    "+Fore.GREEN+"     ██║   ██╚╗ ███████║ ██║██ ██║ █████╗      ██    ██║ ██   ██║ █████╗   ██  ██╗                "+Fore.RESET+" \n"
-            "    "+Fore.GREEN+"     ██║    ██║ ██╔══██║ ██║   ██║ ██╔══╝      ██    ██║ ╚██ ██╔╝ ██╔══╝   █████═╗           "+Fore.RESET+" \n"
-            "    "+Fore.GREEN+"     ╚███████╔╝ ██║  ██║ ██║   ██║ ███████╗    ╚██████╔╝  ╚██╔═╝  ███████╗ ██╔╗██║               "+Fore.RESET+" \n"
-            "    "+Fore.GREEN+"      ╚══════╝  ╚═╝  ╚═╝ ╚═╝   ╚═╝ ╚══════╝     ╚═════╝    ╚═╝    ╚══════╝ ╚═╝╚══╝            "+Fore.RESET+"       \n"
-            "                                                                                        \n"
-                                                                                                       
-            " \n"
-            " \n"
-            " \n"
-            f"                   Убито врагов: {self.enemies_killed}                   Подобрано предметов: {self.items_picked}\n"
-            " \n"
-            f"                   Съедено еды: {self.food_eaten}                    Посещено этажей: {len(self.floors_visited)}\n"
-            " \n"
-            f"                   Совершено атак: {self.attacks_made}                 Получено урона: {self.damage_taken}\n"
-            " \n"
-
-        )
+        return self._generate_display(Fore.GREEN, "                   ")
